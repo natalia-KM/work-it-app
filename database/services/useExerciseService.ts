@@ -1,8 +1,8 @@
 import * as schema from "@/database/schema";
-import { ExerciseTable, ExerciseTabsTable, TabsTable } from "@/database/schema";
+import { ExerciseMuscleTagsTable, ExerciseTable, MuscleTagsTable } from "@/database/schema";
 import { useSQLiteContext } from 'expo-sqlite'
 import { drizzle } from 'drizzle-orm/expo-sqlite'
-import { Exercise, ExerciseTab } from '@/database/entities'
+import { Exercise, ExerciseDetails, MuscleGroup } from '@/database/entities'
 import { eq } from 'drizzle-orm'
 
 export const useExercisesService = () => {
@@ -24,21 +24,26 @@ export const useExercisesService = () => {
                 title: ExerciseTable.title,
                 photo: ExerciseTable.photo,
                 isCustom: ExerciseTable.isCustom,
-                tabId: TabsTable.id,
-                tabName: TabsTable.name
+                tabId: MuscleTagsTable.id,
+                tabName: MuscleTagsTable.name,
+                tabMuscleGroup: MuscleTagsTable.muscleGroup
             })
             .from(ExerciseTable)
-            .leftJoin(ExerciseTabsTable, eq(ExerciseTabsTable.exerciseId, ExerciseTable.id))
-            .leftJoin(TabsTable, eq(TabsTable.id, ExerciseTabsTable.tabId));
+            .leftJoin(ExerciseMuscleTagsTable, eq(ExerciseMuscleTagsTable.exerciseId, ExerciseTable.id))
+            .leftJoin(MuscleTagsTable, eq(MuscleTagsTable.id, ExerciseMuscleTagsTable.tabId));
 
         const grouped = rows.reduce((acc, row) => {
-            const { exerciseId, title, photo, isCustom, tabId, tabName } = row;
+            const { exerciseId, title, photo, isCustom, tabId, tabName, tabMuscleGroup } = row;
             if (!acc[exerciseId]) {
                 acc[exerciseId] = { id: exerciseId, title, photo, isCustom: Boolean(isCustom), tabs: [] };
             }
-            if (tabId && tabName) acc[exerciseId].tabs.push({ id: tabId, name: tabName });
+            if (tabId && tabName && tabMuscleGroup) acc[exerciseId].tabs.push({
+                id: tabId,
+                name: tabName,
+                muscleGroup: tabMuscleGroup as MuscleGroup
+            });
             return acc;
-        }, {} as Record<number, ExerciseTab>);
+        }, {} as Record<number, ExerciseDetails>);
 
         return Object.values(grouped);
     }

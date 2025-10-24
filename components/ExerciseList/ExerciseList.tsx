@@ -2,14 +2,14 @@ import { FlatList, Image } from 'react-native'
 import { ExerciseListProps } from '@/components/ExerciseList/types'
 import styles from '@/components/ExerciseList/styles'
 import { Text, View } from '@/components/Themed'
-import { ExerciseTab } from '@/database/entities'
+import { ExerciseDetails } from '@/database/entities'
 import { useGetExercisesWithTabs } from '@/hooks/exercises/useGetExercisesWithTabs'
 import { getImageSource } from '@/components/utils/getImageSource'
 
 export const ExerciseList = ({ onSelectExercise }: ExerciseListProps) => {
     const { data: exercises, isLoading, isError } = useGetExercisesWithTabs();
 
-    const renderItem = ({ item }: { item: ExerciseTab }) => (
+    const renderItem = ({ item }: { item: ExerciseDetails }) => (
         <View style={styles.itemWrapper}>
             <View style={styles.imageWrapper}>
                 <Image source={getImageSource(item.photo)} style={styles.image}/>
@@ -27,6 +27,7 @@ export const ExerciseList = ({ onSelectExercise }: ExerciseListProps) => {
     if (exercises?.length === 0) {
         return <Text>No exercises!</Text>;
     }
+
     return (
         <FlatList
             data={exercises}

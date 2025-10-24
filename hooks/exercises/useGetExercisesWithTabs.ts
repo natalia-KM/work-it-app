@@ -1,11 +1,11 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { ExerciseTab } from '@/database/entities'
+import { ExerciseDetails } from '@/database/entities'
 import { useExercisesService } from '@/database/services/useExerciseService'
 
-export const useGetExercisesWithTabs = (): UseQueryResult<ExerciseTab[], Error> => {
+export const useGetExercisesWithTabs = (): UseQueryResult<ExerciseDetails[], Error> => {
     const { getExercisesWithTabs } = useExercisesService()
 
-    return useQuery<ExerciseTab[], Error>({
+    return useQuery<ExerciseDetails[], Error>({
         queryKey: ['exercises'],
         queryFn: () => getExercisesWithTabs()
     });

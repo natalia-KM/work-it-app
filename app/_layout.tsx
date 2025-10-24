@@ -14,6 +14,7 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations'
 import { ActivityIndicator } from 'react-native'
+import { seedDatabase } from '@/database/seeds/useSeedDatabase'
 
 export {
     ErrorBoundary
@@ -54,9 +55,18 @@ export const DATABASE_NAME = 'work_it_db'
 function RootLayoutNav() {
     const expoDb = openDatabaseSync(DATABASE_NAME);
     const db = drizzle(expoDb);
-    const { success, error } = useMigrations(db, migrations);
+    const { success } = useMigrations(db, migrations);
 
     const colorScheme = useColorScheme();
+
+    useEffect(() => {
+        const seedDb = async () => {
+            await seedDatabase(db)
+        }
+        if (success) {
+            seedDb()
+        }
+    }, [success, db]);
 
     return (
         <Suspense fallback={<ActivityIndicator size="large"/>}>

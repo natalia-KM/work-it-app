@@ -5,11 +5,18 @@ export interface Exercise {
     isCustom: boolean;
 }
 
-export interface Tab {
-    id: number
-    name: string
+export enum MuscleGroup {
+    UpperBody = "Upper Body",
+    LowerBody = "Lower Body",
+    Core = "Core",
 }
 
-export interface ExerciseTab extends Exercise {
-    tabs: Tab[]
+export interface MuscleTag {
+    id: number
+    name: string
+    muscleGroup: MuscleGroup
+}
+
+export interface ExerciseDetails extends Exercise {
+    tabs: MuscleTag[]
 }
