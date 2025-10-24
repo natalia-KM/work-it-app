@@ -15,6 +15,7 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations'
 import { ActivityIndicator } from 'react-native'
 import { seedDatabase } from '@/database/seeds/useSeedDatabase'
+import { DefaultTheme as PaperLightTheme, PaperProvider } from 'react-native-paper'
 
 export {
     ErrorBoundary
@@ -74,14 +75,16 @@ function RootLayoutNav() {
                 databaseName={DATABASE_NAME}
                 options={{ enableChangeListener: true }}
                 useSuspense>
-                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                    <QueryClientProvider client={queryClient}>
-                        <Stack>
-                            <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
-                            <Stack.Screen name="modal" options={{ presentation: 'modal' }}/>
-                        </Stack>
-                    </QueryClientProvider>
-                </ThemeProvider>
+                <PaperProvider theme={PaperLightTheme}>
+                    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                        <QueryClientProvider client={queryClient}>
+                            <Stack>
+                                <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
+                                <Stack.Screen name="modal" options={{ presentation: 'modal' }}/>
+                            </Stack>
+                        </QueryClientProvider>
+                    </ThemeProvider>
+                </PaperProvider>
             </SQLiteProvider>
         </Suspense>
     );

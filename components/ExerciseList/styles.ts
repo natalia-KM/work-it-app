@@ -1,19 +1,22 @@
 import { StyleSheet } from 'react-native';
-
+// box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 export default StyleSheet.create({
     list: {
         flex: 1,
         width: '85%'
     },
-    itemWrapper: {
+    container: {
         display: 'flex',
-        flexDirection: 'row',
-        width: '100%',
-        borderColor: 'black',
-        borderWidth: 0.5,
-        paddingHorizontal: 15,
-        paddingVertical: 13,
-        marginBottom: 15
+        alignContent: 'center',
+        justifyContent: 'center',
+        paddingTop: 2
+    },
+    itemWrapper: {
+        width: '98%',
+        alignSelf: 'center',
+        marginBottom: 12,
+        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.16)',
+        paddingHorizontal: 4
     },
     imageWrapper: {
         maxWidth: '40%'
