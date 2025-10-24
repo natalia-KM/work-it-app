@@ -12,7 +12,7 @@ export const ExerciseList = ({ onSelectExercise }: ExerciseListProps) => {
     const renderItem = ({ item }: { item: ExerciseTab }) => (
         <View style={styles.itemWrapper}>
             <View style={styles.imageWrapper}>
-                <Image source={getImageSource(item.photo)} style={styles.image} />
+                <Image source={getImageSource(item.photo)} style={styles.image}/>
             </View>
             <View style={styles.contentWrapper}>
                 <Text style={styles.title}>{item.title}</Text>
@@ -24,7 +24,7 @@ export const ExerciseList = ({ onSelectExercise }: ExerciseListProps) => {
     if (isLoading) return <Text>Loading...</Text>;
     if (isError) return <Text>Error loading exercises</Text>;
 
-    if(exercises?.length == 0) {
+    if (exercises?.length === 0) {
         return <Text>No exercises!</Text>;
     }
     return (
