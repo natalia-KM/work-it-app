@@ -4,8 +4,10 @@ import { ExerciseList } from '@/components/ExerciseList'
 import { Searchbar } from 'react-native-paper'
 import { useState } from 'react'
 
-export default function TabTwoScreen() {
+export default function ExerciseListingScreen() {
     const [searchQuery, setSearchQuery] = useState('')
+
+    // TODO: update children to not set 85% width, rather the container should do it
 
     return (
         <View style={styles.container}>

@@ -15,7 +15,7 @@ export const ExerciseList = ({ onSelectExercise, searchQuery }: ExerciseListProp
         <List.Item
             style={styles.itemWrapper}
             title={item.title}
-            description={item.tabs.map((tab) => tab.name).join(', ')}
+            description={item.tabs?.map((tab) => tab.name).join(', ')}
             left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
         />
     );

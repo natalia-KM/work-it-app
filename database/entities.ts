@@ -6,8 +6,8 @@ export interface Exercise {
 }
 
 export enum MuscleGroup {
-    UpperBody = "Upper Body",
-    LowerBody = "Lower Body",
+    UpperBody = "Upper",
+    LowerBody = "Lower",
     Core = "Core",
 }
 
