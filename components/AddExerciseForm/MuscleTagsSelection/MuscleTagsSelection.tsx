@@ -1,10 +1,11 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { View } from '@/components/Themed'
-import { Chip, SegmentedButtons, Text } from 'react-native-paper'
+import { Chip, HelperText, SegmentedButtons, Text } from 'react-native-paper'
 import { predefinedMuscleTags } from '@/database/seeds/predefinedExercises'
 import { useState } from 'react'
 import { MuscleGroup } from '@/database/entities'
 import { StyleSheet } from 'react-native'
+import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 
 const muscleGroupsArray = Object.values(MuscleGroup).map((muscleGroup) => ({
     value: muscleGroup.toLowerCase(),
@@ -12,7 +13,7 @@ const muscleGroupsArray = Object.values(MuscleGroup).map((muscleGroup) => ({
 }))
 
 export const MuscleTagsSelection = () => {
-    const { control } = useFormContext();
+    const { control, formState: { errors } } = useFormContext<AddExerciseFormValues>();
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState(MuscleGroup.UpperBody.toLowerCase())
 
     return (
@@ -56,6 +57,7 @@ export const MuscleTagsSelection = () => {
                     </View>
                 )}
             />
+            {errors.muscleTags?.message && <HelperText type={'error'}>{errors.muscleTags?.message}</HelperText>}
         </View>
     )
 }
