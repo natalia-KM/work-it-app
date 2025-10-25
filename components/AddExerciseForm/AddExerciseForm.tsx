@@ -6,6 +6,9 @@ import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { MuscleTagsSelection } from '@/components/AddExerciseForm/MuscleTagsSelection'
 import { ExerciseTitleField } from '@/components/AddExerciseForm/ExerciseTitleField'
 import { ExerciseImageUpload } from '@/components/AddExerciseForm/ExerciseImageUpload'
+import { useCreateExercise } from '@/hooks/exercises/useCreateExercise'
+import { useRouter } from 'expo-router'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const AddExerciseForm = () => {
     const {
@@ -13,9 +16,21 @@ export const AddExerciseForm = () => {
         formState: { isValid }
     } = useFormContext<AddExerciseFormValues>()
 
-    const onSubmit = (data: AddExerciseFormValues) => {
-        console.log("Form submitted:", data);
-        // TODO: invalidate queries
+    const { mutateAsync: createExercise } = useCreateExercise()
+
+    const router = useRouter();
+    const queryClient = useQueryClient()
+
+    const onSubmit = async (data: AddExerciseFormValues) => {
+        await createExercise(data)
+            .then(() => {
+                router.navigate('/exercises')
+                queryClient.invalidateQueries({ queryKey: ['exercises'] })
+            })
+            .catch((error) => {
+                alert('Error creating an exercise')
+                console.error(error)
+            })
     };
 
     return (

@@ -29,25 +29,30 @@ export const MuscleTagsSelection = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => (
                     <View style={styles.tagsContainer}>
-                        {predefinedMuscleTags.filter(tag => tag.muscleGroup.toLowerCase() === selectedMuscleGroup).map((tag) => (
-                            <Chip
-                                key={tag.id.toString()}
-                                selected={value.some((t: string) => t === tag.id.toString())}
-                                onPress={() => {
-                                    if (value.some((t: string) => t === tag.id.toString())) {
-                                        // remove
-                                        onChange(value.filter((t: string) => t !== tag.id.toString()));
-                                    } else {
-                                        // add
-                                        onChange([...value, tag.id.toString()]);
-                                    }
-                                }}
-                            >
-                                <Text style={{ flexWrap: 'wrap' }} numberOfLines={0}>
-                                    {tag.name}
-                                </Text>
-                            </Chip>
-                        ))}
+                        {predefinedMuscleTags.filter(tag => tag.muscleGroup.toLowerCase() === selectedMuscleGroup).map((tag) => {
+                            const isSelected = value.some((t: number) => t === tag.id)
+
+                            return (
+                                <Chip
+                                    key={tag.id}
+                                    selected={isSelected}
+                                    mode={isSelected ? 'flat' : 'outlined'}
+                                    onPress={() => {
+                                        if (isSelected) {
+                                            // remove
+                                            onChange(value.filter((t: number) => t !== tag.id));
+                                        } else {
+                                            // add
+                                            onChange([...value, tag.id]);
+                                        }
+                                    }}
+                                >
+                                    <Text style={{ flexWrap: 'wrap' }} numberOfLines={0}>
+                                        {tag.name}
+                                    </Text>
+                                </Chip>
+                            )
+                        })}
                     </View>
                 )}
             />

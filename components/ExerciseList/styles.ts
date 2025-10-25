@@ -16,16 +16,16 @@ export default StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 12,
         boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.16)',
-        paddingHorizontal: 4
+        paddingHorizontal: 4,
+        paddingVertical: 0
     },
     imageWrapper: {
         maxWidth: '40%'
     },
     image: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        marginRight: 16
+        width: 64,
+        height: 64,
+        marginRight: 8
     },
     contentWrapper: {
         display: 'flex',

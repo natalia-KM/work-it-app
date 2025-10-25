@@ -36,7 +36,13 @@ const config = {
                 "expo-sqlite",
                 {
                     enableFTS: true,
-                    useSQLCipher: false,
+                    useSQLCipher: false
+                }
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "The app accesses your photos."
                 }
             ]
         ],

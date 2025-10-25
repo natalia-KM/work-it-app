@@ -9,6 +9,26 @@ export const useExercisesService = () => {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db, { schema });
 
+    const addExercise = async (exerciseData: Omit<Exercise, 'id'>) => {
+        const data = {
+            ...exerciseData,
+            isCustom: exerciseData.isCustom ? 0 : 1
+        }
+        const result = await drizzleDb.insert(ExerciseTable).values(data);
+        return result.lastInsertRowId
+    }
+
+    const addExerciseTagLinks = async (exerciseId: number, tabIds: number[]) => {
+        if (tabIds.length === 0) return;
+
+        const rows = tabIds.map((tabId) => ({
+            exerciseId,
+            tabId
+        }));
+
+        await drizzleDb.insert(ExerciseMuscleTagsTable).values(rows);
+    };
+
     const getExercises = async (): Promise<Exercise[]> => {
         const result = await drizzleDb.select().from(ExerciseTable);
         return result.map((exercise) => ({
@@ -49,5 +69,5 @@ export const useExercisesService = () => {
     }
 
 
-    return { getExercises, getExercisesWithTabs };
+    return { getExercises, getExercisesWithTabs, addExercise, addExerciseTagLinks };
 };

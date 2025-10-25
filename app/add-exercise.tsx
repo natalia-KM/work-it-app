@@ -17,7 +17,8 @@ export default function AddExercise() {
         reValidateMode: 'onChange',
         defaultValues: {
             title: '',
-            muscleTags: []
+            muscleTags: [],
+            photo: null
         }
     });
 

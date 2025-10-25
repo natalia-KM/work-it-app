@@ -1,4 +1,7 @@
 import { z } from 'zod'
+import { ImagePickerAsset } from 'expo-image-picker'
+
+// TODO: add max 3 muscleTags constraint and title validation
 
 export const formSchema = (exercises: { title: string }[]) => {
     return z.object({
@@ -8,8 +11,13 @@ export const formSchema = (exercises: { title: string }[]) => {
                 (value) => !exercises.some((ex) => ex.title.toLowerCase() === value.toLowerCase()),
                 { message: "An exercise with this name already exists" }
             ),
-        muscleTags: z.array(z.string())
+        muscleTags: z.array(z.number()),
+        photo: z.any().nullable().optional()
     })
 }
 
-export type AddExerciseFormValues = z.infer<ReturnType<typeof formSchema>>
+export type AddExerciseFormValues = {
+    title: string
+    muscleTags: number[]
+    photo?: ImagePickerAsset | null
+}
