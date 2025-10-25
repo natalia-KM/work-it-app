@@ -7,7 +7,8 @@ export const formSchema = (exercises: { title: string }[]) => {
             .refine(
                 (value) => !exercises.some((ex) => ex.title.toLowerCase() === value.toLowerCase()),
                 { message: "An exercise with this name already exists" }
-            )
+            ),
+        muscleTags: z.array(z.string())
     })
 }
 
