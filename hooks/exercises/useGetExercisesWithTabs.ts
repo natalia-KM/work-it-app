@@ -7,6 +7,6 @@ export const useGetExercisesWithTabs = (): UseQueryResult<ExerciseDetails[], Err
 
     return useQuery<ExerciseDetails[], Error>({
         queryKey: ['exercises'],
-        queryFn: () => getExercisesWithTabs()
+        queryFn: getExercisesWithTabs
     });
 };
