@@ -2,17 +2,37 @@ import * as schema from "@/database/schema";
 import { ExerciseMuscleTagsTable, ExerciseTable, MuscleTagsTable } from "@/database/schema";
 import { useSQLiteContext } from 'expo-sqlite'
 import { drizzle } from 'drizzle-orm/expo-sqlite'
-import { Exercise, ExerciseDetails, MuscleGroup } from '@/database/entities'
+import { Exercise, ExerciseDetails, MuscleGroup, MuscleTag } from '@/database/entities'
 import { eq } from 'drizzle-orm'
 
 export const useExercisesService = () => {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db, { schema });
 
+    const exercisesWithTabsQuery = drizzleDb
+        .select({
+            exerciseId: ExerciseTable.id,
+            title: ExerciseTable.title,
+            photo: ExerciseTable.photo,
+            isCustom: ExerciseTable.isCustom,
+            tabId: MuscleTagsTable.id,
+            tabName: MuscleTagsTable.name,
+            tabMuscleGroup: MuscleTagsTable.muscleGroup
+        })
+        .from(ExerciseTable)
+        .leftJoin(
+            ExerciseMuscleTagsTable,
+            eq(ExerciseMuscleTagsTable.exerciseId, ExerciseTable.id)
+        )
+        .leftJoin(
+            MuscleTagsTable,
+            eq(MuscleTagsTable.id, ExerciseMuscleTagsTable.tabId)
+        )
+
     const addExercise = async (exerciseData: Omit<Exercise, 'id'>) => {
         const data = {
             ...exerciseData,
-            isCustom: exerciseData.isCustom ? 0 : 1
+            isCustom: exerciseData.isCustom ? 1 : 0
         }
         const result = await drizzleDb.insert(ExerciseTable).values(data);
         return result.lastInsertRowId
@@ -29,6 +49,24 @@ export const useExercisesService = () => {
         await drizzleDb.insert(ExerciseMuscleTagsTable).values(rows);
     };
 
+    const updateExercise = async (exerciseData: Exercise) => {
+        const data = {
+            ...exerciseData,
+            isCustom: exerciseData.isCustom ? 1 : 0
+        }
+        const result = await drizzleDb.update(ExerciseTable).set(data).where(eq(ExerciseTable.id, exerciseData.id));
+        return result.lastInsertRowId
+    };
+
+    const updateTags = async (exerciseId: number, tabIds: number[]) => {
+        await drizzleDb.delete(ExerciseMuscleTagsTable).where(eq(ExerciseMuscleTagsTable.exerciseId, exerciseId));
+        await addExerciseTagLinks(exerciseId, tabIds);
+    };
+
+    const deleteExercise = async (exerciseId: number) => {
+        await drizzleDb.delete(ExerciseTable).where(eq(ExerciseTable.id, exerciseId));
+    };
+
     const getExercises = async (): Promise<Exercise[]> => {
         const result = await drizzleDb.select().from(ExerciseTable);
         return result.map((exercise) => ({
@@ -37,20 +75,32 @@ export const useExercisesService = () => {
         }))
     };
 
+    const getExerciseById = async (id: number): Promise<ExerciseDetails | null> => {
+        const rows = await exercisesWithTabsQuery.where(eq(ExerciseTable.id, id));
+
+        if (!rows.length) return null;
+
+        const { title, photo, isCustom } = rows[0];
+
+        const tabs: MuscleTag[] = rows
+            .filter((r) => r.tabId && r.tabName && r.tabMuscleGroup)
+            .map((r) => ({
+                id: r.tabId!,
+                name: r.tabName!,
+                muscleGroup: r.tabMuscleGroup! as MuscleGroup
+            }));
+
+        return {
+            id,
+            title,
+            photo,
+            isCustom: Boolean(isCustom),
+            tabs
+        };
+    }
+
     const getExercisesWithTabs = async () => {
-        const rows = await drizzleDb
-            .select({
-                exerciseId: ExerciseTable.id,
-                title: ExerciseTable.title,
-                photo: ExerciseTable.photo,
-                isCustom: ExerciseTable.isCustom,
-                tabId: MuscleTagsTable.id,
-                tabName: MuscleTagsTable.name,
-                tabMuscleGroup: MuscleTagsTable.muscleGroup
-            })
-            .from(ExerciseTable)
-            .leftJoin(ExerciseMuscleTagsTable, eq(ExerciseMuscleTagsTable.exerciseId, ExerciseTable.id))
-            .leftJoin(MuscleTagsTable, eq(MuscleTagsTable.id, ExerciseMuscleTagsTable.tabId));
+        const rows = await exercisesWithTabsQuery;
 
         const grouped = rows.reduce((acc, row) => {
             const { exerciseId, title, photo, isCustom, tabId, tabName, tabMuscleGroup } = row;
@@ -69,5 +119,14 @@ export const useExercisesService = () => {
     }
 
 
-    return { getExercises, getExercisesWithTabs, addExercise, addExerciseTagLinks };
+    return {
+        getExercises,
+        getExercisesWithTabs,
+        addExercise,
+        addExerciseTagLinks,
+        getExerciseById,
+        updateExercise,
+        updateTags,
+        deleteExercise
+    };
 };

@@ -6,12 +6,12 @@ import { useController } from 'react-hook-form'
 import { useState } from 'react'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 import * as ImagePicker from 'expo-image-picker';
-import { ImagePickerAsset } from 'expo-image-picker';
+import { getImageSource } from '@/components/utils/getImageSource'
 
 export const ExerciseImageUpload = () => {
     const { field: { value, onChange } } = useController<AddExerciseFormValues>({ name: 'photo' })
 
-    const [preview, setPreview] = useState<ImagePickerAsset | null>(value);
+    const [preview, setPreview] = useState<string | null>(value as string ?? null);
 
     const pickMedia = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -23,8 +23,9 @@ export const ExerciseImageUpload = () => {
         if (result.canceled) return;
 
         const asset = result.assets[0];
-        setPreview(asset);
-        onChange(asset);
+
+        setPreview(asset.uri);
+        onChange(asset.uri);
     }
 
     const clearSelection = () => {
@@ -33,12 +34,12 @@ export const ExerciseImageUpload = () => {
     }
 
     return (
-        <Card mode={preview ? 'contained' : 'outlined'} style={styles.card}>
+        <Card mode={'contained'} style={styles.card}>
             <Card.Content style={styles.cardContent}>
                 {preview ? (
                     <View style={styles.previewContainer}>
                         <Image
-                            source={{ uri: preview.uri }}
+                            source={getImageSource(preview)}
                             style={styles.imagePreview}
                             resizeMode="cover"
                         />

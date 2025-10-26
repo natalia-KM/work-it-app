@@ -13,8 +13,15 @@ const muscleGroupsArray = Object.values(MuscleGroup).map((muscleGroup) => ({
 }))
 
 export const MuscleTagsSelection = () => {
-    const { control, formState: { errors } } = useFormContext<AddExerciseFormValues>();
-    const [selectedMuscleGroup, setSelectedMuscleGroup] = useState(MuscleGroup.UpperBody.toLowerCase())
+    const { control, formState: { errors }, getValues } = useFormContext<AddExerciseFormValues>();
+    const currentTags = getValues("muscleTags") || [];
+    const isCustom = getValues('isCustom')
+
+    const firstGroup =
+        predefinedMuscleTags.find((tag) => tag.id === currentTags[0])?.muscleGroup ??
+        MuscleGroup.UpperBody;
+
+    const [selectedMuscleGroup, setSelectedMuscleGroup] = useState(firstGroup.toLowerCase())
 
     return (
         <View style={styles.tagsSection}>
@@ -30,30 +37,30 @@ export const MuscleTagsSelection = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => (
                     <View style={styles.tagsContainer}>
-                        {predefinedMuscleTags.filter(tag => tag.muscleGroup.toLowerCase() === selectedMuscleGroup).map((tag) => {
-                            const isSelected = value.some((t: number) => t === tag.id)
+                        {predefinedMuscleTags.filter(tag => tag.muscleGroup.toLowerCase() === selectedMuscleGroup)
+                            .map((tag) => {
+                                const isSelected = value.some((t: number) => t === tag.id)
 
-                            return (
-                                <Chip
-                                    key={tag.id}
-                                    selected={isSelected}
-                                    mode={isSelected ? 'flat' : 'outlined'}
-                                    onPress={() => {
-                                        if (isSelected) {
-                                            // remove
-                                            onChange(value.filter((t: number) => t !== tag.id));
-                                        } else {
-                                            // add
-                                            onChange([...value, tag.id]);
-                                        }
-                                    }}
-                                >
-                                    <Text style={{ flexWrap: 'wrap' }} numberOfLines={0}>
-                                        {tag.name}
-                                    </Text>
-                                </Chip>
-                            )
-                        })}
+                                const newVal = isSelected
+                                    ? value.filter((t: number) => t !== tag.id) // remove
+                                    : [...value, tag.id]; // add
+
+                                // needs sorting, as zod takes an account of array's order (isDirty)
+                                const sorted = [...newVal].sort((a, b) => a - b);
+                                return (
+                                    <Chip
+                                        key={tag.id}
+                                        selected={isSelected}
+                                        mode={isSelected ? 'flat' : 'outlined'}
+                                        onPress={() => onChange(sorted)}
+                                        disabled={!isCustom}
+                                    >
+                                        <Text style={{ flexWrap: 'wrap' }} numberOfLines={0}>
+                                            {tag.name}
+                                        </Text>
+                                    </Chip>
+                                )
+                            })}
                     </View>
                 )}
             />

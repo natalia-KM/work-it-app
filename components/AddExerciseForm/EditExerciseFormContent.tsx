@@ -1,38 +1,42 @@
+import { KeyboardAvoidingView, Platform } from 'react-native'
+import { View } from '@/components/Themed'
+import { ExerciseImageUpload } from '@/components/AddExerciseForm/ExerciseImageUpload'
+import { ExerciseTitleField } from '@/components/AddExerciseForm/ExerciseTitleField'
+import { MuscleTagsSelection } from '@/components/AddExerciseForm/MuscleTagsSelection'
+import { Button } from 'react-native-paper'
+import { styles } from '@/components/AddExerciseForm/styles'
 import { useFormContext } from 'react-hook-form'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
-import { Button } from 'react-native-paper';
-import { View } from '@/components/Themed'
-import { KeyboardAvoidingView, Platform } from 'react-native'
-import { MuscleTagsSelection } from '@/components/AddExerciseForm/MuscleTagsSelection'
-import { ExerciseTitleField } from '@/components/AddExerciseForm/ExerciseTitleField'
-import { ExerciseImageUpload } from '@/components/AddExerciseForm/ExerciseImageUpload'
-import { useCreateExercise } from '@/hooks/exercises/useCreateExercise'
+import { useUpdateExercise } from '@/hooks/exercises/useUpdateExercise'
 import { useRouter } from 'expo-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { styles } from '@/components/AddExerciseForm/styles'
 
-export const AddExerciseForm = () => {
+interface EditExerciseFormContentProps {
+    exerciseId: number
+}
+
+export const EditExerciseFormContent = ({ exerciseId }: EditExerciseFormContentProps) => {
+    const { mutateAsync: updateExercise } = useUpdateExercise()
+
     const {
         handleSubmit,
-        formState: { isValid }
+        formState: { isValid, isDirty }
     } = useFormContext<AddExerciseFormValues>()
-
-    const { mutateAsync: createExercise } = useCreateExercise()
 
     const router = useRouter()
     const queryClient = useQueryClient()
 
     const onSubmit = async (data: AddExerciseFormValues) => {
-        await createExercise(data)
+        await updateExercise({ exerciseId, data })
             .then(() => {
                 router.navigate('/exercises')
-                queryClient.invalidateQueries({ queryKey: ['exercises'] })
+                queryClient.invalidateQueries({ queryKey: ['exercise', exerciseId] })
             })
             .catch((error) => {
-                alert('Error creating an exercise')
+                alert('Error updating an exercise')
                 console.error(error)
             })
-    };
+    }
 
     return (
         <KeyboardAvoidingView
@@ -46,14 +50,17 @@ export const AddExerciseForm = () => {
 
                 <MuscleTagsSelection/>
             </View>
+
+
             <Button
                 mode={'contained'}
                 style={styles.submitButton}
                 onPress={handleSubmit(onSubmit)}
-                disabled={!isValid}
+                disabled={!isDirty || !isValid}
             >
-                Create
+                Update
             </Button>
+
         </KeyboardAvoidingView>
     )
 }

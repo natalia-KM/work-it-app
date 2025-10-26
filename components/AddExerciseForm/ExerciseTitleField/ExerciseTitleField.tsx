@@ -1,9 +1,11 @@
 import { View } from '@/components/Themed'
-import { useController } from 'react-hook-form'
+import { useController, useWatch } from 'react-hook-form'
 import { HelperText, TextInput } from 'react-native-paper'
+import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 
 export const ExerciseTitleField = () => {
     const { field, fieldState } = useController({ name: "title" });
+    const isCustom = useWatch<AddExerciseFormValues>({ name: 'isCustom' })
 
     return (
         <View>
@@ -13,6 +15,7 @@ export const ExerciseTitleField = () => {
                 onBlur={field.onBlur}
                 onChangeText={field.onChange}
                 value={field.value}
+                disabled={!isCustom}
                 placeholder="Enter the title of the exercise"
             />
             {fieldState.error?.message && <HelperText type={'error'}>{fieldState.error.message}</HelperText>}

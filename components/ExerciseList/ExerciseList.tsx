@@ -7,18 +7,11 @@ import { useGetExercisesWithTabs } from '@/hooks/exercises/useGetExercisesWithTa
 import { getImageSource } from '@/components/utils/getImageSource'
 import { useMemo } from 'react'
 import { List } from 'react-native-paper';
+import { useRouter } from 'expo-router'
 
-export const ExerciseList = ({ onSelectExercise, searchQuery }: ExerciseListProps) => {
+export const ExerciseList = ({ searchQuery }: ExerciseListProps) => {
     const { data: exercises, isLoading, isError } = useGetExercisesWithTabs();
-
-    const renderItem = ({ item }: { item: ExerciseDetails }) => (
-        <List.Item
-            style={styles.itemWrapper}
-            title={item.title}
-            description={item.tabs?.map((tab) => tab.name).join(', ')}
-            left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
-        />
-    );
+    const router = useRouter();
 
     const exerciseData = useMemo(() => {
         if (exercises && exercises.length > 0 && searchQuery) {
@@ -42,7 +35,15 @@ export const ExerciseList = ({ onSelectExercise, searchQuery }: ExerciseListProp
             style={styles.list}
             contentContainerStyle={styles.container}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
+            renderItem={({ item }: { item: ExerciseDetails }) => (
+                <List.Item
+                    style={styles.itemWrapper}
+                    title={item.title}
+                    onPress={() => router.push(`/(exercises)/${item.id.toString()}`)}
+                    description={item.tabs?.map((tab) => tab.name).join(', ')}
+                    left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
+                />
+            )}
         />
     );
 }
