@@ -75,18 +75,18 @@ function RootLayoutNav() {
                 databaseName={DATABASE_NAME}
                 options={{ enableChangeListener: true }}
                 useSuspense>
-                <PaperProvider theme={PaperLightTheme}>
-                    {/*<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>*/}
-                    <ThemeProvider value={DefaultTheme}>
-                        <QueryClientProvider client={queryClient}>
+                <QueryClientProvider client={queryClient}>
+                    <PaperProvider theme={PaperLightTheme}>
+                        {/*<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>*/}
+                        <ThemeProvider value={DefaultTheme}>
                             <Stack>
                                 <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
                                 <Stack.Screen name="(exercises)" options={{ headerShown: false }}/>
                                 <Stack.Screen name="modal" options={{ presentation: 'modal' }}/>
                             </Stack>
-                        </QueryClientProvider>
-                    </ThemeProvider>
-                </PaperProvider>
+                        </ThemeProvider>
+                    </PaperProvider>
+                </QueryClientProvider>
             </SQLiteProvider>
         </Suspense>
     );

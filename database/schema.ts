@@ -20,3 +20,21 @@ export const ExerciseMuscleTagsTable = sqliteTable("Exercise_MuscleTags", {
     tabId: integer("tabId").notNull()
         .references(() => MuscleTagsTable.id)
 });
+
+export const WorkoutTable = sqliteTable("Workout", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull().unique(),
+    notes: text("notes"),
+    lastWorkout: integer("lastWorkout", { mode: 'timestamp' }),
+    createdAt: integer("createdAt", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date())
+});
+
+export const WorkoutExerciseTable = sqliteTable("Workout_Exercise", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    workoutId: integer("workoutId").notNull()
+        .references(() => WorkoutTable.id),
+    exerciseId: integer("exerciseId").notNull()
+        .references(() => ExerciseTable.id),
+    isArchived: integer("isArchived").notNull().default(0),
+    notes: text("notes")
+});

@@ -15,6 +15,20 @@
       "when": 1761340004987,
       "tag": "0001_fair_blue_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1762087584769,
+      "tag": "0002_tan_matthew_murdock",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1762090488558,
+      "tag": "0003_keen_stranger",
+      "breakpoints": true
     }
   ]
 }

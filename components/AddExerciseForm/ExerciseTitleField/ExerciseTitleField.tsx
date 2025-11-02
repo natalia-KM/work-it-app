@@ -16,6 +16,7 @@ export const ExerciseTitleField = () => {
                 onChangeText={field.onChange}
                 value={field.value}
                 disabled={!isCustom}
+                error={!!fieldState.error?.message}
                 placeholder="Enter the title of the exercise"
             />
             {fieldState.error?.message && <HelperText type={'error'}>{fieldState.error.message}</HelperText>}

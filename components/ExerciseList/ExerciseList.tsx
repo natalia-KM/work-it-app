@@ -1,15 +1,16 @@
 import { FlatList, Image } from 'react-native'
-import { ExerciseListProps } from '@/components/ExerciseList/types'
 import styles from '@/components/ExerciseList/styles'
 import { Text } from '@/components/Themed'
 import { ExerciseDetails } from '@/database/entities'
 import { useGetExercisesWithTabs } from '@/hooks/exercises/useGetExercisesWithTabs'
 import { getImageSource } from '@/components/utils/getImageSource'
-import { useMemo } from 'react'
-import { List } from 'react-native-paper';
+import { useMemo, useState } from 'react'
+import { List, Searchbar } from 'react-native-paper';
 import { useRouter } from 'expo-router'
 
-export const ExerciseList = ({ searchQuery }: ExerciseListProps) => {
+export const ExerciseList = () => {
+    const [searchQuery, setSearchQuery] = useState('')
+
     const { data: exercises, isLoading, isError } = useGetExercisesWithTabs();
     const router = useRouter();
 
@@ -30,20 +31,28 @@ export const ExerciseList = ({ searchQuery }: ExerciseListProps) => {
     }
 
     return (
-        <FlatList
-            data={exerciseData}
-            style={styles.list}
-            contentContainerStyle={styles.container}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }: { item: ExerciseDetails }) => (
-                <List.Item
-                    style={styles.itemWrapper}
-                    title={item.title}
-                    onPress={() => router.push(`/(exercises)/${item.id.toString()}`)}
-                    description={item.tabs?.map((tab) => tab.name).join(', ')}
-                    left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
-                />
-            )}
-        />
+        <>
+            <Searchbar
+                placeholder="Search"
+                style={styles.searchBar}
+                onChangeText={setSearchQuery}
+                value={searchQuery}
+            />
+            <FlatList
+                data={exerciseData}
+                style={styles.list}
+                contentContainerStyle={styles.container}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }: { item: ExerciseDetails }) => (
+                    <List.Item
+                        style={styles.itemWrapper}
+                        title={item.title}
+                        onPress={() => router.push(`/(exercises)/${item.id.toString()}`)}
+                        description={item.tabs?.map((tab) => tab.name).join(', ')}
+                        left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
+                    />
+                )}
+            />
+        </>
     );
 }

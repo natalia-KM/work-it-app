@@ -20,3 +20,11 @@ export interface MuscleTag {
 export interface ExerciseDetails extends Exercise {
     tabs: MuscleTag[]
 }
+
+export interface Workout {
+    id: number;
+    title: string;
+    notes?: string | null;
+    lastWorkout: Date | null;
+    createdAt: Date;
+}
