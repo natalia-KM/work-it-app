@@ -25,6 +25,7 @@ export interface Workout {
     id: number;
     title: string;
     notes?: string | null;
+    color?: string | null
     lastWorkout: Date | null;
     createdAt: Date;
 }

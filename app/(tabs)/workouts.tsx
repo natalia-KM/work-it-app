@@ -34,13 +34,23 @@ export default function WorkoutsListScreen() {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }: { item: Workout }) => (
                     <List.Item
-                        style={styles.itemWrapper}
+                        style={[
+                            styles.itemWrapper,
+                            {
+                                borderTopWidth: 0,
+                                borderRightWidth: 0,
+                                borderBottomWidth: 0,
+                                borderLeftWidth: 10,
+                                borderLeftColor: item.color ?? 'transparent'
+                            }
+                        ]}
                         title={item.title}
                         // onPress={() => router.push(`/(exercises)/${item.id.toString()}`)}
                         description={item.lastWorkout?.toString}
                     />
                 )}
             />
+            <AddWorkoutButton/>
         </View>
     )
 }
@@ -70,7 +80,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignContent: 'center',
         justifyContent: 'center',
-        paddingTop: 2
+        paddingTop: 15
     },
     itemWrapper: {
         width: '98%',
@@ -78,6 +88,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.16)',
         paddingHorizontal: 4,
-        paddingVertical: 0
+        paddingVertical: 10,
+        borderRadius: 5
     }
 })

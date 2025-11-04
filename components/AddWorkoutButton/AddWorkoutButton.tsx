@@ -1,4 +1,4 @@
-import { Button, Modal, Portal, Text } from 'react-native-paper'
+import { Button, Modal, Portal } from 'react-native-paper'
 import { useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { AddWorkoutForm } from '@/components/AddWorkoutForm/AddWorkoutForm'
@@ -17,8 +17,7 @@ export const AddWorkoutButton = () => {
                     onDismiss={hideModal}
                     contentContainerStyle={styles.modal}
                 >
-                    <Text>Create workout</Text>
-                    <AddWorkoutForm/>
+                    <AddWorkoutForm onClose={hideModal}/>
                 </Modal>
             </Portal>
             <Button

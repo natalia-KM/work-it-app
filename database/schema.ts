@@ -25,6 +25,7 @@ export const WorkoutTable = sqliteTable("Workout", {
     id: integer("id").primaryKey({ autoIncrement: true }),
     title: text("title").notNull().unique(),
     notes: text("notes"),
+    color: text("color"),
     lastWorkout: integer("lastWorkout", { mode: 'timestamp' }),
     createdAt: integer("createdAt", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date())
 });

@@ -5,6 +5,7 @@ import m0000 from './0000_lying_natasha_romanoff.sql';
 import m0001 from './0001_fair_blue_blade.sql';
 import m0002 from './0002_tan_matthew_murdock.sql';
 import m0003 from './0003_keen_stranger.sql';
+import m0004 from './0004_rich_stingray.sql';
 
   export default {
     journal,
@@ -12,7 +13,8 @@ import m0003 from './0003_keen_stranger.sql';
       m0000,
 m0001,
 m0002,
-m0003
+m0003,
+m0004
     }
   }
   

@@ -32,11 +32,13 @@ export const formSchema = ({
                     (ex) => ex.title.toLowerCase() === value.toLowerCase() && value !== initialTitle),
                 { message: "A workout with this name already exists" }
             ),
-        notes: z.string().max(255, { message: "Description cannot exceed 255 characters" }).optional()
+        notes: z.string().max(255, { message: "Description cannot exceed 255 characters" }).optional(),
+        color: z.string().optional()
     })
 }
 
 export type WorkoutFormValues = {
     title: string
-    notes?: string
+    notes?: string,
+    color?: string
 }

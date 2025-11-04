@@ -1,29 +1,40 @@
-import { KeyboardAvoidingView, Platform } from 'react-native'
+import { KeyboardAvoidingView, Platform, Pressable } from 'react-native'
 import { styles } from '@/components/AddWorkoutForm/styles'
 import { Controller, useForm } from 'react-hook-form'
 import { formSchema, WorkoutFormValues } from '@/components/AddWorkoutForm/AddWorkoutValidationSchema'
-import { Button, HelperText, TextInput } from 'react-native-paper'
+import { Button, HelperText, Text, TextInput } from 'react-native-paper'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
 import { useCreateWorkout } from '@/hooks/workouts/useCreateWorkout'
 import { useRouter } from 'expo-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { View } from '@/components/Themed'
+import { ColorPicker } from '@/components/ColorPicker'
+import { useState } from 'react'
 
-export const AddWorkoutForm = () => {
+interface AddWorkoutFormProps {
+    onClose: () => void
+}
+
+export const AddWorkoutForm = ({ onClose }: AddWorkoutFormProps) => {
+    const [isColorPickerOpen, setIsColorPickerOpen] = useState(false)
+    const [selectedColor, setSelectedColor] = useState('#4B0082')
+
     const { data: workouts = [] } = useGetWorkouts()
     const { mutateAsync: createWorkout } = useCreateWorkout()
 
     const {
         control,
         handleSubmit,
-        formState
+        formState,
+        setValue
     } = useForm<WorkoutFormValues>({
         resolver: zodResolver(formSchema({ workouts })),
         mode: 'onChange',
         reValidateMode: 'onChange',
         defaultValues: {
-            title: ''
+            title: '',
+            color: selectedColor
         }
     });
 
@@ -40,6 +51,9 @@ export const AddWorkoutForm = () => {
                 alert('Error creating a workout')
                 console.error(error)
             })
+            .finally(() => {
+                onClose()
+            })
     }
 
     return (
@@ -47,6 +61,34 @@ export const AddWorkoutForm = () => {
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // different handling per OS
         >
+            <View style={styles.header}>
+                <Text variant="titleLarge">Create Workout</Text>
+                <Pressable
+                    onPress={() => setIsColorPickerOpen(true)}
+                    style={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: '50%',
+                        backgroundColor: selectedColor ?? 'transparent',
+                        margin: 5,
+                        borderWidth: 2,
+                        borderColor: 'black'
+                    }}
+                />
+            </View>
+
+            {isColorPickerOpen && (
+                <ColorPicker
+                    isOpen={isColorPickerOpen}
+                    selectedColor={selectedColor}
+                    setSelectedColor={setSelectedColor}
+                    onConfirm={(color) => {
+                        setValue('color', color)
+                        setIsColorPickerOpen(false)
+                    }}
+                />
+            )}
+
             <View>
                 <Controller
                     name={'title'}
