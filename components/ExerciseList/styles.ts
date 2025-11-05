@@ -15,6 +15,9 @@ export default StyleSheet.create({
         justifyContent: 'center',
         paddingTop: 2
     },
+    itemContents: {
+        alignItems: 'center'
+    },
     itemWrapper: {
         width: '98%',
         alignSelf: 'center',

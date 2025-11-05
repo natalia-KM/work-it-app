@@ -6,6 +6,7 @@ import m0001 from './0001_fair_blue_blade.sql';
 import m0002 from './0002_tan_matthew_murdock.sql';
 import m0003 from './0003_keen_stranger.sql';
 import m0004 from './0004_rich_stingray.sql';
+import m0005 from './0005_free_moonstone.sql';
 
   export default {
     journal,
@@ -14,7 +15,8 @@ import m0004 from './0004_rich_stingray.sql';
 m0001,
 m0002,
 m0003,
-m0004
+m0004,
+m0005
     }
   }
   

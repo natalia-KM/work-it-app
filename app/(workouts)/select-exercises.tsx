@@ -7,23 +7,47 @@ import { useQueryClient } from '@tanstack/react-query'
 import { View } from '@/components/Themed'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
+import { useDeleteWorkoutExercises } from '@/hooks/workouts/useDeleteWorkoutExercises'
+
+const suffix = (count: number) => {
+    if (count > 1) return 's'
+    return ''
+}
 
 export default function SelectWorkoutExercises() {
     const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
 
-    const [selectedExercises, setSelectedExercises] = useState<number[]>([])
+    const { data: exercises } = useGetWorkoutExercises(Number(workoutId))
+
+    const exerciseIds = useMemo(() => {
+        return exercises?.map(exercise => exercise.id)
+    }, [exercises])
+
+    const [selectedExercises, setSelectedExercises] = useState<number[]>(exerciseIds ?? [])
+
     const { mutateAsync: addExercises } = useAddExercisesToWorkout()
+    const { mutateAsync: deleteExercises } = useDeleteWorkoutExercises()
 
     const queryClient = useQueryClient()
     const router = useRouter();
 
     const buttonText = useMemo(() => {
-        if (!selectedExercises || selectedExercises.length === 0) return 'Select exercises'
+        if (!exercises || exercises.length === 0) {
+            if (!selectedExercises || selectedExercises.length === 0) return 'Select exercises'
 
-        if (selectedExercises.length === 1) return 'Add 1 Exercise'
+            return `Add ${selectedExercises.length} Exercise${suffix(selectedExercises.length)}`
+        }
 
-        return `Add ${selectedExercises.length} Exercises`
-    }, [selectedExercises])
+        if (exercises.length > selectedExercises.length) {
+            const len = exercises.length - selectedExercises.length
+            return `Remove ${len} Exercise${suffix(len)}`
+        } else if (exercises.length < selectedExercises.length) {
+            const len = selectedExercises.length - exercises.length
+            return `Add ${len} Exercise${suffix(len)}`
+        }
+        return 'Done'
+    }, [selectedExercises, exercises])
 
     if (!workoutId) {
         return <Text>Something went wrong...</Text>
@@ -40,17 +64,23 @@ export default function SelectWorkoutExercises() {
     }
 
     const onConfirm = async () => {
-        await addExercises({ workoutId: Number(workoutId), exercises: selectedExercises })
-            .then(() => {
-                queryClient.invalidateQueries({ queryKey: ['workout-exercises'] })
-            })
-            .catch((err) => {
-                alert('Error adding exercises to workout')
-                console.error(err)
-            })
-            .finally(() => {
-                router.push(`/(workouts)/${workoutId}`)
-            })
+        const toAdd = selectedExercises.filter((id) => !exerciseIds?.includes(id));
+        const toRemove = exerciseIds?.filter((id) => !selectedExercises.includes(id));
+
+        try {
+            if (toAdd && toAdd.length > 0) {
+                await addExercises({ workoutId: Number(workoutId), exercises: toAdd })
+            }
+            if (toRemove && toRemove.length > 0) {
+                await deleteExercises({ workoutId: Number(workoutId), exercises: toRemove })
+            }
+        } catch (err) {
+            alert('Error adding exercises to workout')
+            console.error(err)
+        } finally {
+            await queryClient.invalidateQueries({ queryKey: ['workout-exercises'] })
+            router.navigate(`/(workouts)/${workoutId}`)
+        }
     }
 
     return (

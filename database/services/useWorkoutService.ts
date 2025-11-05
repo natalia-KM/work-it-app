@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/expo-sqlite'
 import * as schema from '@/database/schema'
 import { WorkoutTable } from '@/database/schema'
 import { ExerciseWorkoutDetails, Workout } from '@/database/entities'
-import { eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 
 export const useWorkoutService = () => {
     const db = useSQLiteContext();
@@ -27,13 +27,22 @@ export const useWorkoutService = () => {
         await drizzleDb.insert(schema.WorkoutExerciseTable).values(exercises.map((exerciseId) => ({
             workoutId,
             exerciseId
-        })))
+        }))).onConflictDoNothing()
+    }
+
+    const removeWorkoutExercises = async (workoutId: number, exercises: number[]) => {
+        await drizzleDb.delete(schema.WorkoutExerciseTable).where(
+            and(
+                eq(schema.WorkoutExerciseTable.workoutId, workoutId),
+                inArray(schema.WorkoutExerciseTable.exerciseId, exercises)
+            )
+        );
     }
 
     const getWorkoutExercisesWithDetails = async (workoutId: number): Promise<ExerciseWorkoutDetails[]> => {
         const result = await drizzleDb
             .select({
-                id: schema.WorkoutExerciseTable.id,
+                id: schema.ExerciseTable.id,
                 title: schema.ExerciseTable.title,
                 photo: schema.ExerciseTable.photo,
                 notes: schema.WorkoutExerciseTable.notes,
@@ -55,5 +64,12 @@ export const useWorkoutService = () => {
         }))
     };
 
-    return { getWorkouts, addWorkout, getWorkoutById, getWorkoutExercisesWithDetails, addWorkoutExercises }
+    return {
+        getWorkouts,
+        addWorkout,
+        getWorkoutById,
+        getWorkoutExercisesWithDetails,
+        addWorkoutExercises,
+        removeWorkoutExercises
+    }
 }

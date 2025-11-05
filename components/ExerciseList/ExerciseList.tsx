@@ -57,6 +57,7 @@ export const ExerciseList = ({
                 renderItem={({ item }: { item: ExerciseDetails }) => (
                     <List.Item
                         style={styles.itemWrapper}
+                        containerStyle={styles.itemContents}
                         title={item.title}
                         onPress={() => onExercisePress(item.id)}
                         description={item.tabs?.map((tab) => tab.name).join(', ')}

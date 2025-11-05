@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 
 export const ExerciseTable = sqliteTable("Exercise", {
     id: integer("id").primaryKey({ autoIncrement: true }),
@@ -38,4 +38,6 @@ export const WorkoutExerciseTable = sqliteTable("Workout_Exercise", {
         .references(() => ExerciseTable.id),
     isArchived: integer("isArchived").notNull().default(0),
     notes: text("notes")
-});
+}, (table) => ({
+    workoutExerciseUnique: unique().on(table.workoutId, table.exerciseId)
+}));

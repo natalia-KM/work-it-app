@@ -1,10 +1,11 @@
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
-import { Button, List, Text } from 'react-native-paper'
-import { useRouter } from 'expo-router'
+import { List, Text } from 'react-native-paper'
 import { Image, StyleSheet } from 'react-native'
 import { NoItemsFound } from '@/components/NoItemsFound'
 import { View } from '@/components/Themed'
 import { getImageSource } from '@/components/utils/getImageSource'
+import { AddWorkoutExercisesButton } from '@/components/WorkoutExercises/AddWorkoutExercisesButton'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 interface WorkoutExercisesProps {
     workoutId: number
@@ -12,16 +13,6 @@ interface WorkoutExercisesProps {
 
 export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
     const { data: exercises, isError: isExerciseError } = useGetWorkoutExercises(workoutId)
-
-    const router = useRouter()
-
-    const handleAddExercises = () => {
-        router.push({
-            pathname: "/(workouts)/select-exercises",
-            params: { workoutId }
-        });
-    };
-
 
     if (isExerciseError || !exercises) {
         return <Text>Could not load exercises</Text>
@@ -32,43 +23,45 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
             <NoItemsFound
                 title={'This workout is empty'}
                 description={'Start building your workout by adding exercises'}
-                ActionButton={
-                    <Button
-                        onPress={handleAddExercises}
-                        mode="contained"
-                    >
-                        Add Exercises
-                    </Button>
-                }
+                ActionButton={<AddWorkoutExercisesButton workoutId={workoutId}/>}
             />
         )
     }
 
     return (
-        <View style={styles.list}>
-            {exercises.map(exercise => (
-                <List.Accordion
-                    key={exercise.id}
-                    title={exercise.title}
-                    id={exercise.id.toString()}
-                    style={styles.itemWrapper}
-                    containerStyle={styles.accordionWrapper}
-                    left={props => <Image {...props} source={getImageSource(exercise.photo)} style={styles.image}/>}
-                >
-                    <View>
-                        <Text>Item 1</Text>
-                    </View>
-                </List.Accordion>
-            ))}
-        </View>
+        <SafeAreaView style={styles.area}>
+            <View style={styles.list}>
+                {exercises.map(exercise => (
+                    <List.Accordion
+                        key={exercise.id}
+                        title={exercise.title}
+                        id={exercise.id.toString()}
+                        style={styles.itemWrapper}
+                        containerStyle={styles.accordionWrapper}
+                        left={props => <Image {...props} source={getImageSource(exercise.photo)} style={styles.image}/>}
+                    >
+                        <View>
+                            <Text>Item 1</Text>
+                        </View>
+                    </List.Accordion>
+                ))}
+            </View>
+            <AddWorkoutExercisesButton workoutId={workoutId} styles={styles.addButton}/>
+        </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
+    area: {
+        flex: 1,
+        backgroundColor: 'white',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     list: {
         flex: 1,
         width: '85%',
-        marginTop: 10,
         gap: 15
     },
     container: {
@@ -93,5 +86,8 @@ const styles = StyleSheet.create({
         height: 48,
         marginRight: 6,
         marginLeft: 4
+    },
+    addButton: {
+        marginBottom: 10
     }
 })
