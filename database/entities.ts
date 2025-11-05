@@ -29,3 +29,9 @@ export interface Workout {
     lastWorkout: Date | null;
     createdAt: Date;
 }
+
+export interface ExerciseWorkoutDetails extends Exercise {
+    id: number;
+    isArchived: boolean;
+    notes?: string | null;
+}

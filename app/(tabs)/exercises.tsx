@@ -1,13 +1,15 @@
 import { StyleSheet } from 'react-native';
 import { View } from '@/components/Themed';
 import { ExerciseList } from '@/components/ExerciseList'
+import { useRouter } from 'expo-router'
 
 export default function ExerciseListingScreen() {
     // TODO: update children to not set 85% width, rather the container should do it
+    const router = useRouter();
 
     return (
         <View style={styles.container}>
-            <ExerciseList/>
+            <ExerciseList onExercisePress={(exerciseId) => router.push(`/(exercises)/${exerciseId.toString()}`)}/>
         </View>
     );
 }
@@ -18,9 +20,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 10
-    },
-    searchBar: {
-        width: '85%',
-        marginVertical: 20
     }
 });

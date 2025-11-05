@@ -1,10 +1,11 @@
 import { FlatList, StyleSheet } from 'react-native';
 import { View } from '@/components/Themed';
-import { Icon, List, Text } from 'react-native-paper'
+import { List } from 'react-native-paper'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
 import { Workout } from '@/database/entities'
 import { useRouter } from 'expo-router'
 import { AddWorkoutButton } from '@/components/AddWorkoutButton/AddWorkoutButton'
+import { NoItemsFound } from '@/components/NoItemsFound'
 
 export default function WorkoutsListScreen() {
     const { data: workouts, isError } = useGetWorkouts()
@@ -16,12 +17,11 @@ export default function WorkoutsListScreen() {
 
     if (workouts?.length === 0) {
         return (
-            <View style={styles.noItemsFoundContainer}>
-                <Icon source="sleep" size={64}/>
-                <Text variant="titleLarge">No workouts found</Text>
-                <Text style={styles.subtitle}>Start by creating your first workout to track your progress</Text>
-                <AddWorkoutButton/>
-            </View>
+            <NoItemsFound
+                title={'No workouts found'}
+                description={'Start by creating your first workout to track your progress'}
+                ActionButton={<AddWorkoutButton/>}
+            />
         )
     }
 
@@ -45,7 +45,7 @@ export default function WorkoutsListScreen() {
                             }
                         ]}
                         title={item.title}
-                        // onPress={() => router.push(`/(exercises)/${item.id.toString()}`)}
+                        onPress={() => router.push(`/(workouts)/${item.id.toString()}`)}
                         description={item.lastWorkout?.toString}
                     />
                 )}
@@ -61,16 +61,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 10
-    },
-    noItemsFoundContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 15,
-        gap: 15
-    },
-    subtitle: {
-        textAlign: 'center'
     },
     list: {
         flex: 1,

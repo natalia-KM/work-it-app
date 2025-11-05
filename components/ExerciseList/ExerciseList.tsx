@@ -4,15 +4,26 @@ import { Text } from '@/components/Themed'
 import { ExerciseDetails } from '@/database/entities'
 import { useGetExercisesWithTabs } from '@/hooks/exercises/useGetExercisesWithTabs'
 import { getImageSource } from '@/components/utils/getImageSource'
-import { useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import { List, Searchbar } from 'react-native-paper';
-import { useRouter } from 'expo-router'
+import { Style } from 'react-native-paper/src/components/List/utils'
 
-export const ExerciseList = () => {
+interface ExerciseListProps {
+    onExercisePress: (exerciseId: number) => void
+    rightIcon?: (props: {
+        exerciseId: number
+        color: string
+        style?: Style
+    }) => ReactNode
+}
+
+export const ExerciseList = ({
+    onExercisePress,
+    rightIcon
+}: ExerciseListProps) => {
     const [searchQuery, setSearchQuery] = useState('')
 
     const { data: exercises, isLoading, isError } = useGetExercisesWithTabs();
-    const router = useRouter();
 
     const exerciseData = useMemo(() => {
         if (exercises && exercises.length > 0 && searchQuery) {
@@ -47,9 +58,10 @@ export const ExerciseList = () => {
                     <List.Item
                         style={styles.itemWrapper}
                         title={item.title}
-                        onPress={() => router.push(`/(exercises)/${item.id.toString()}`)}
+                        onPress={() => onExercisePress(item.id)}
                         description={item.tabs?.map((tab) => tab.name).join(', ')}
                         left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
+                        right={(props) => rightIcon?.({ exerciseId: item.id, ...props })}
                     />
                 )}
             />
