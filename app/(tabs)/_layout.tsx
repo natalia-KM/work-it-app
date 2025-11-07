@@ -47,6 +47,7 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="workouts"
                 options={{
+                    headerShown: false,
                     title: 'Workouts',
                     tabBarShowLabel: true,
                     tabBarIcon: ({ color }) => <TabBarIcon icon="walk" iconColor={color}/>

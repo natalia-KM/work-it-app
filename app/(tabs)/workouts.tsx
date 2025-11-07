@@ -1,15 +1,20 @@
-import { FlatList, StyleSheet } from 'react-native';
-import { View } from '@/components/Themed';
-import { List } from 'react-native-paper'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
-import { Workout } from '@/database/entities'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { AddWorkoutButton } from '@/components/AddWorkoutButton/AddWorkoutButton'
 import { NoItemsFound } from '@/components/NoItemsFound'
+import { WorkoutDetails } from '@/components/WorkoutDetails'
+import { createDrawerNavigator } from '@react-navigation/drawer'
+import { useMemo } from 'react'
+
+const Drawer = createDrawerNavigator();
 
 export default function WorkoutsListScreen() {
     const { data: workouts, isError } = useGetWorkouts()
-    const router = useRouter();
+    const { targetWorkoutId } = useLocalSearchParams<{ targetWorkoutId?: string }>();
+
+    const selectedWorkout = useMemo(() => {
+        return workouts?.find((w) => w.id.toString() === targetWorkoutId) || workouts?.[0];
+    }, [targetWorkoutId, workouts])
 
     if (!workouts || isError) {
         return null
@@ -26,59 +31,21 @@ export default function WorkoutsListScreen() {
     }
 
     return (
-        <View style={styles.container}>
-            <FlatList
-                data={workouts}
-                style={styles.list}
-                contentContainerStyle={styles.listContainer}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }: { item: Workout }) => (
-                    <List.Item
-                        style={[
-                            styles.itemWrapper,
-                            {
-                                borderTopWidth: 0,
-                                borderRightWidth: 0,
-                                borderBottomWidth: 0,
-                                borderLeftWidth: 10,
-                                borderLeftColor: item.color ?? 'transparent'
-                            }
-                        ]}
-                        title={item.title}
-                        onPress={() => router.push(`/(workouts)/${item.id.toString()}`)}
-                        description={item.lastWorkout?.toString}
-                    />
-                )}
-            />
-            <AddWorkoutButton/>
-        </View>
+        <Drawer.Navigator
+            initialRouteName={selectedWorkout?.id.toString() ?? workouts[0].id.toString()}
+            screenOptions={{ headerShown: false }}
+        >
+            {workouts.map((workout) => (
+                <Drawer.Screen
+                    key={workout.id}
+                    name={workout.id.toString()}
+                    options={{
+                        drawerLabel: workout.title
+                    }}
+                >
+                    {() => <WorkoutDetails workoutId={workout.id}/>}
+                </Drawer.Screen>
+            ))}
+        </Drawer.Navigator>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 10
-    },
-    list: {
-        flex: 1,
-        width: '85%'
-    },
-    listContainer: {
-        display: 'flex',
-        alignContent: 'center',
-        justifyContent: 'center',
-        paddingTop: 15
-    },
-    itemWrapper: {
-        width: '98%',
-        alignSelf: 'center',
-        marginBottom: 12,
-        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.16)',
-        paddingHorizontal: 4,
-        paddingVertical: 10,
-        borderRadius: 5
-    }
-})

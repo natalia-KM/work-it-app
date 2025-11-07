@@ -79,7 +79,10 @@ export default function SelectWorkoutExercises() {
             console.error(err)
         } finally {
             await queryClient.invalidateQueries({ queryKey: ['workout-exercises'] })
-            router.navigate(`/(workouts)/${workoutId}`)
+            router.navigate({
+                pathname: '/(tabs)/workouts',
+                params: { targetWorkoutId: workoutId.toString() }
+            });
         }
     }
 
