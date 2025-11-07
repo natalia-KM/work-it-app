@@ -5,16 +5,22 @@ import { NoItemsFound } from '@/components/NoItemsFound'
 import { WorkoutDetails } from '@/components/WorkoutDetails'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { useMemo } from 'react'
+import { WorkoutDrawer } from '@/components/WorkoutDrawer/WorkoutDrawer'
+import { Text } from '@/components/Themed'
 
 const Drawer = createDrawerNavigator();
 
 export default function WorkoutsListScreen() {
-    const { data: workouts, isError } = useGetWorkouts()
+    const { data: workouts, isLoading, isError } = useGetWorkouts()
     const { targetWorkoutId } = useLocalSearchParams<{ targetWorkoutId?: string }>();
 
     const selectedWorkout = useMemo(() => {
         return workouts?.find((w) => w.id.toString() === targetWorkoutId) || workouts?.[0];
     }, [targetWorkoutId, workouts])
+
+    if (isLoading) {
+        return <Text>Loading</Text>
+    }
 
     if (!workouts || isError) {
         return null
@@ -32,6 +38,7 @@ export default function WorkoutsListScreen() {
 
     return (
         <Drawer.Navigator
+            drawerContent={(props) => <WorkoutDrawer {...props} />}
             initialRouteName={selectedWorkout?.id.toString() ?? workouts[0].id.toString()}
             screenOptions={{ headerShown: false }}
         >
