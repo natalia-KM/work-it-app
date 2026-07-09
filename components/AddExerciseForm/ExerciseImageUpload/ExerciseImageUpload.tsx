@@ -1,5 +1,4 @@
-import { Button, Card, IconButton, Text } from 'react-native-paper'
-import { Icon } from 'react-native-paper/src'
+import { Button, Card, Icon, IconButton, Text } from 'react-native-paper'
 import { View } from '@/components/Themed'
 import { Image, StyleSheet } from 'react-native'
 import { useController } from 'react-hook-form'

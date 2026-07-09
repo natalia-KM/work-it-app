@@ -1,4 +1,4 @@
-import { FlatList, Image } from 'react-native'
+import { FlatList, Image, StyleProp, ViewStyle } from 'react-native'
 import styles from '@/components/ExerciseList/styles'
 import { Text } from '@/components/Themed'
 import { ExerciseDetails } from '@/database/entities'
@@ -6,14 +6,13 @@ import { useGetExercisesWithTabs } from '@/hooks/exercises/useGetExercisesWithTa
 import { getImageSource } from '@/components/utils/getImageSource'
 import { ReactNode, useMemo, useState } from 'react'
 import { List, Searchbar } from 'react-native-paper';
-import { Style } from 'react-native-paper/src/components/List/utils'
 
 interface ExerciseListProps {
     onExercisePress: (exerciseId: number) => void
     rightIcon?: (props: {
         exerciseId: number
         color: string
-        style?: Style
+        style?: StyleProp<ViewStyle>
     }) => ReactNode
 }
 

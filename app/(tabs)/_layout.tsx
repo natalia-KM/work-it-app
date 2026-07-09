@@ -1,5 +1,4 @@
 import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, Tabs } from 'expo-router';
 import { Pressable } from 'react-native';
 
@@ -27,21 +26,7 @@ export default function TabLayout() {
                 name="index"
                 options={{
                     title: 'Home',
-                    tabBarIcon: ({ color }) => <TabBarIcon icon="home-outline" iconColor={color}/>,
-                    headerRight: () => (
-                        <Link href="/modal" asChild>
-                            <Pressable>
-                                {({ pressed }) => (
-                                    <FontAwesome
-                                        name="info-circle"
-                                        size={25}
-                                        color={Colors['light'].text}
-                                        style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                                    />
-                                )}
-                            </Pressable>
-                        </Link>
-                    )
+                    tabBarIcon: ({ color }) => <TabBarIcon icon="home-outline" iconColor={color}/>
                 }}
             />
             <Tabs.Screen

@@ -31,7 +31,36 @@ export interface Workout {
 }
 
 export interface ExerciseWorkoutDetails extends Exercise {
-    id: number;
     isArchived: boolean;
+    bestAchieved?: number | null
+    lastCompleted?: Date | null
     notes?: string | null;
+}
+
+export interface ExerciseLogDetails {
+    /**
+     * ID of a set. Can be used to determine order and number of sets
+     */
+    set: number,
+
+    /**
+     * Weight for the current set
+     */
+    weight: number,
+
+    /**
+     * Number of reps for the current set
+     */
+    reps: number
+}
+
+export interface ExerciseLog {
+    logId: number;
+    date: Date | null;
+    duration: number | null;
+    exerciseLogId: number;
+    details: ExerciseLogDetails[] | null;
+    notes: string | null;
+    restTime: number;
+    bestAchieved: number | null;
 }

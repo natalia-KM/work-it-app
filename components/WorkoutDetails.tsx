@@ -11,7 +11,7 @@ interface WorkoutDetailsProps {
 }
 
 export const WorkoutDetails = ({ workoutId }: WorkoutDetailsProps) => {
-    const { data: workout, isError } = useGetWorkout(Number(workoutId))
+    const { data: workout, isError } = useGetWorkout({ workoutId: Number(workoutId) })
 
     const navigation = useNavigation();
 

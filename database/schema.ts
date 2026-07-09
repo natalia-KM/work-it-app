@@ -1,4 +1,5 @@
 import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
+import { ExerciseLogDetails } from '@/database/entities'
 
 export const ExerciseTable = sqliteTable("Exercise", {
     id: integer("id").primaryKey({ autoIncrement: true }),
@@ -37,7 +38,29 @@ export const WorkoutExerciseTable = sqliteTable("Workout_Exercise", {
     exerciseId: integer("exerciseId").notNull()
         .references(() => ExerciseTable.id),
     isArchived: integer("isArchived").notNull().default(0),
+    bestAchieved: integer("bestAchieved"),
+    lastCompleted: integer("lastCompleted", { mode: 'timestamp' }),
     notes: text("notes")
 }, (table) => ({
     workoutExerciseUnique: unique().on(table.workoutId, table.exerciseId)
 }));
+
+export const WorkoutLogTable = sqliteTable("WorkoutLog", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    workoutId: integer("workoutId").notNull()
+        .references(() => WorkoutTable.id),
+    date: integer("date", { mode: 'timestamp' }),
+    duration: integer("duration")
+});
+
+export const WorkoutLogExerciseTable = sqliteTable("WorkoutLog_Exercise", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    workoutLogId: integer("workoutLogId").notNull()
+        .references(() => WorkoutLogTable.id),
+    exerciseId: integer("exerciseId").notNull()
+        .references(() => ExerciseTable.id),
+    details: text({ mode: 'json' }).$type<ExerciseLogDetails[]>(),
+    notes: text("notes"),
+    restTime: integer("restTime").notNull(),
+    bestAchieved: integer("bestAchieved")
+});

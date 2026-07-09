@@ -47,6 +47,7 @@ export const useWorkoutService = () => {
                 photo: schema.ExerciseTable.photo,
                 notes: schema.WorkoutExerciseTable.notes,
                 isCustom: schema.ExerciseTable.isCustom,
+                // bestAchieved: schema.WorkoutLogExerciseTable.bestAchieved,
                 isArchived: schema.WorkoutExerciseTable.isArchived
             })
             .from(schema.WorkoutExerciseTable)

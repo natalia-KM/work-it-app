@@ -1,18 +1,23 @@
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
-import { List, Text } from 'react-native-paper'
+import { Button, List, Text } from 'react-native-paper'
 import { Image, StyleSheet } from 'react-native'
 import { NoItemsFound } from '@/components/NoItemsFound'
 import { View } from '@/components/Themed'
 import { getImageSource } from '@/components/utils/getImageSource'
 import { AddWorkoutExercisesButton } from '@/components/WorkoutExercises/AddWorkoutExercisesButton'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import { useWorkoutProgressStore } from '@/store/useWorkoutProgressStore'
 
 interface WorkoutExercisesProps {
     workoutId: number
 }
 
 export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
-    const { data: exercises, isError: isExerciseError } = useGetWorkoutExercises(workoutId)
+    const { data: exercises, isError: isExerciseError } = useGetWorkoutExercises({ workoutId })
+
+    const { setWorkoutDetails } = useWorkoutProgressStore()
+    const router = useRouter()
 
     if (isExerciseError || !exercises) {
         return <Text>Could not load exercises</Text>
@@ -46,7 +51,14 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
                     </List.Accordion>
                 ))}
             </View>
-            <AddWorkoutExercisesButton workoutId={workoutId} styles={styles.addButton}/>
+            <Button onPress={() => {
+                setWorkoutDetails(workoutId)
+                router.navigate({
+                    pathname: '/(workouts)/current-workout-main'
+                })
+            }}>
+                Start Workout
+            </Button>
         </SafeAreaView>
     )
 }

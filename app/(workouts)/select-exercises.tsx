@@ -18,7 +18,7 @@ const suffix = (count: number) => {
 export default function SelectWorkoutExercises() {
     const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
 
-    const { data: exercises } = useGetWorkoutExercises(Number(workoutId))
+    const { data: exercises } = useGetWorkoutExercises({ workoutId: Number(workoutId) })
 
     const exerciseIds = useMemo(() => {
         return exercises?.map(exercise => exercise.id)
