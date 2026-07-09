@@ -70,6 +70,12 @@ export const useExercisesService = () => {
     };
 
     const deleteExercise = async (exerciseId: number) => {
+        const exercise = await getExerciseById(exerciseId)
+
+        if (!exercise) {
+            throw new Error('Exercise could not be found.')
+        }
+
         const [workoutLinks, logLinks] = await Promise.all([
             drizzleDb
                 .select({ id: WorkoutExerciseTable.id })
@@ -89,6 +95,8 @@ export const useExercisesService = () => {
 
         await drizzleDb.delete(ExerciseMuscleTagsTable).where(eq(ExerciseMuscleTagsTable.exerciseId, exerciseId));
         await drizzleDb.delete(ExerciseTable).where(eq(ExerciseTable.id, exerciseId));
+
+        return exercise.photo
     };
 
     const getExercises = async (): Promise<Exercise[]> => {

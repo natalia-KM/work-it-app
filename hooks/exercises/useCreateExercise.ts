@@ -8,12 +8,13 @@ export const useCreateExercise = () => {
     const queryClient = useQueryClient()
 
     const createExercise = async (data: AddExerciseFormValues) => {
-        if (data.photo) {
-            saveImage(data.photo)
-        }
+        const photo = data.photo ? saveImage(data.photo) : data.photo
+
+        if (data.photo && !photo) throw new Error('Could not save exercise image.')
+
         const exerciseData = {
             title: data.title,
-            photo: data.photo,
+            photo,
             isCustom: true
         }
 

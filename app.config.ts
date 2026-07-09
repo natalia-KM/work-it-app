@@ -42,7 +42,7 @@ const config = {
             [
                 "expo-image-picker",
                 {
-                    "photosPermission": "The app accesses your photos."
+                    "photosPermission": "Allow Work It to choose exercise photos from your library."
                 }
             ]
         ],

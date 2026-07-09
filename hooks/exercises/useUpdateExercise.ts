@@ -1,7 +1,7 @@
 import { useExercisesService } from '@/database/services/useExerciseService'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { saveImage } from '@/components/utils/saveImage'
+import { deleteStoredImage, saveImage } from '@/components/utils/saveImage'
 
 interface UpdateExerciseParams {
     exerciseId: number,
@@ -9,18 +9,23 @@ interface UpdateExerciseParams {
 }
 
 export const useUpdateExercise = () => {
-    const { updateExercise, updateTags } = useExercisesService()
+    const { getExerciseById, updateExercise, updateTags } = useExercisesService()
     const queryClient = useQueryClient()
 
     const updateExerciseData = async ({ exerciseId, data }: UpdateExerciseParams) => {
-        if (data.photo) {
-            saveImage(data.photo)
+        const existingExercise = await getExerciseById(exerciseId)
+        const photo = data.photo ? saveImage(data.photo) : data.photo
+
+        if (data.photo && !photo) throw new Error('Could not save exercise image.')
+
+        if (existingExercise?.photo && existingExercise.photo !== photo) {
+            deleteStoredImage(existingExercise.photo)
         }
 
         const exerciseData = {
             id: exerciseId,
             title: data.title,
-            photo: data.photo,
+            photo,
             isCustom: true
         }
         await updateExercise(exerciseData)
