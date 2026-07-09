@@ -1,6 +1,6 @@
 import { useExercisesService } from '@/database/services/useExerciseService'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { saveImage } from '@/components/utils/saveImage'
 
 interface UpdateExerciseParams {
@@ -10,6 +10,7 @@ interface UpdateExerciseParams {
 
 export const useUpdateExercise = () => {
     const { updateExercise, updateTags } = useExercisesService()
+    const queryClient = useQueryClient()
 
     const updateExerciseData = async ({ exerciseId, data }: UpdateExerciseParams) => {
         if (data.photo) {
@@ -22,15 +23,23 @@ export const useUpdateExercise = () => {
             photo: data.photo,
             isCustom: true
         }
-        const updatedExerciseId = await updateExercise(exerciseData)
+        await updateExercise(exerciseData)
 
-        if (data.muscleTags && updatedExerciseId) {
-            await updateTags(updatedExerciseId, data.muscleTags)
+        if (data.muscleTags) {
+            await updateTags(exerciseId, data.muscleTags)
         }
     }
 
     return useMutation({
         mutationKey: ['updateExercise'],
-        mutationFn: updateExerciseData
+        mutationFn: updateExerciseData,
+        onSuccess: async (_result, { exerciseId }) => {
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['exercise', exerciseId] }),
+                queryClient.invalidateQueries({ queryKey: ['exercises'] }),
+                queryClient.invalidateQueries({ queryKey: ['exercises-with-tabs'] }),
+                queryClient.invalidateQueries({ queryKey: ['workout-exercises'] })
+            ])
+        }
     })
 }

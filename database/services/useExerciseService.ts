@@ -54,8 +54,8 @@ export const useExercisesService = () => {
             ...exerciseData,
             isCustom: exerciseData.isCustom ? 1 : 0
         }
-        const result = await drizzleDb.update(ExerciseTable).set(data).where(eq(ExerciseTable.id, exerciseData.id));
-        return result.lastInsertRowId
+        await drizzleDb.update(ExerciseTable).set(data).where(eq(ExerciseTable.id, exerciseData.id));
+        return exerciseData.id
     };
 
     const updateTags = async (exerciseId: number, tabIds: number[]) => {

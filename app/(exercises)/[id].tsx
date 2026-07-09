@@ -7,7 +7,6 @@ import { useGetExerciseById } from '@/hooks/exercises/useGetExerciseById'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { EditExerciseForm } from '@/components/AddExerciseForm/EditExerciseForm'
 import { useDeleteExercise } from '@/hooks/exercises/useDeleteExercise'
-import { useQueryClient } from '@tanstack/react-query'
 
 export default function EditExercise() {
     const { id: exerciseId } = useLocalSearchParams<{ id: string }>();
@@ -18,13 +17,11 @@ export default function EditExercise() {
     const { mutateAsync: deleteExercise } = useDeleteExercise()
 
     const router = useRouter();
-    const queryClient = useQueryClient()
 
     const handleDelete = async () => {
         await deleteExercise(Number(exerciseId))
             .then(() => {
                 router.navigate('/exercises')
-                queryClient.invalidateQueries({ queryKey: ['exercises'] })
             })
             .catch((error) => {
                 alert('Error deleting an exercise')

@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
 import { useCreateWorkout } from '@/hooks/workouts/useCreateWorkout'
 import { useRouter } from 'expo-router'
-import { useQueryClient } from '@tanstack/react-query'
 import { View } from '@/components/Themed'
 import { ColorPicker } from '@/components/ColorPicker'
 import { useState } from 'react'
@@ -39,13 +38,11 @@ export const AddWorkoutForm = ({ onClose }: AddWorkoutFormProps) => {
     });
 
     const router = useRouter()
-    const queryClient = useQueryClient()
 
     const onSubmit = async (data: WorkoutFormValues) => {
         await createWorkout(data)
             .then(() => {
                 router.navigate('/workouts')
-                queryClient.invalidateQueries({ queryKey: ['workouts'] })
             })
             .catch((error) => {
                 alert('Error creating a workout')

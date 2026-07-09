@@ -6,7 +6,7 @@ export const useGetExercisesWithTabs = (): UseQueryResult<ExerciseDetails[], Err
     const { getExercisesWithTabs } = useExercisesService()
 
     return useQuery<ExerciseDetails[], Error>({
-        queryKey: ['exercises'],
+        queryKey: ['exercises-with-tabs'],
         queryFn: getExercisesWithTabs
     });
 };

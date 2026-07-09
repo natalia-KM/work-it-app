@@ -8,7 +8,6 @@ import { ExerciseTitleField } from '@/components/AddExerciseForm/ExerciseTitleFi
 import { ExerciseImageUpload } from '@/components/AddExerciseForm/ExerciseImageUpload'
 import { useCreateExercise } from '@/hooks/exercises/useCreateExercise'
 import { useRouter } from 'expo-router'
-import { useQueryClient } from '@tanstack/react-query'
 import { styles } from '@/components/AddExerciseForm/styles'
 
 export const AddExerciseForm = () => {
@@ -20,13 +19,11 @@ export const AddExerciseForm = () => {
     const { mutateAsync: createExercise } = useCreateExercise()
 
     const router = useRouter()
-    const queryClient = useQueryClient()
 
     const onSubmit = async (data: AddExerciseFormValues) => {
         await createExercise(data)
             .then(() => {
                 router.navigate('/exercises')
-                queryClient.invalidateQueries({ queryKey: ['exercises'] })
             })
             .catch((error) => {
                 alert('Error creating an exercise')

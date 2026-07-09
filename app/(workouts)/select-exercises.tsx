@@ -1,9 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ExerciseList } from '@/components/ExerciseList'
 import { Button, Checkbox, Text } from 'react-native-paper'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAddExercisesToWorkout } from '@/hooks/workouts/useAddExercisesToWorkout'
-import { useQueryClient } from '@tanstack/react-query'
 import { View } from '@/components/Themed'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -17,6 +16,7 @@ const suffix = (count: number) => {
 
 export default function SelectWorkoutExercises() {
     const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
+    const hasInitializedSelection = useRef(false)
 
     const { data: exercises } = useGetWorkoutExercises({ workoutId: Number(workoutId) })
 
@@ -24,12 +24,18 @@ export default function SelectWorkoutExercises() {
         return exercises?.map(exercise => exercise.id)
     }, [exercises])
 
-    const [selectedExercises, setSelectedExercises] = useState<number[]>(exerciseIds ?? [])
+    const [selectedExercises, setSelectedExercises] = useState<number[]>([])
+
+    useEffect(() => {
+        if (!exerciseIds || hasInitializedSelection.current) return
+
+        setSelectedExercises(exerciseIds)
+        hasInitializedSelection.current = true
+    }, [exerciseIds])
 
     const { mutateAsync: addExercises } = useAddExercisesToWorkout()
     const { mutateAsync: deleteExercises } = useDeleteWorkoutExercises()
 
-    const queryClient = useQueryClient()
     const router = useRouter();
 
     const buttonText = useMemo(() => {
@@ -78,7 +84,6 @@ export default function SelectWorkoutExercises() {
             alert('Error adding exercises to workout')
             console.error(err)
         } finally {
-            await queryClient.invalidateQueries({ queryKey: ['workout-exercises'] })
             router.navigate({
                 pathname: '/(tabs)/workouts',
                 params: { targetWorkoutId: workoutId.toString() }
@@ -101,7 +106,7 @@ export default function SelectWorkoutExercises() {
                     style={styles.submitButton}
                     onPress={onConfirm}
                     mode={'contained'}
-                    disabled={!selectedExercises || selectedExercises.length === 0}
+                    disabled={!exercises || (exercises.length === 0 && selectedExercises.length === 0)}
                 >
                     {buttonText}
                 </Button>

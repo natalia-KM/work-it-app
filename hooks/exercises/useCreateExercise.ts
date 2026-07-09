@@ -1,10 +1,11 @@
 import { useExercisesService } from '@/database/services/useExerciseService'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 import { saveImage } from '@/components/utils/saveImage'
 
 export const useCreateExercise = () => {
     const { addExercise, addExerciseTagLinks } = useExercisesService()
+    const queryClient = useQueryClient()
 
     const createExercise = async (data: AddExerciseFormValues) => {
         if (data.photo) {
@@ -25,6 +26,12 @@ export const useCreateExercise = () => {
 
     return useMutation({
         mutationKey: ['createExercise'],
-        mutationFn: createExercise
+        mutationFn: createExercise,
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['exercises'] }),
+                queryClient.invalidateQueries({ queryKey: ['exercises-with-tabs'] })
+            ])
+        }
     })
 }

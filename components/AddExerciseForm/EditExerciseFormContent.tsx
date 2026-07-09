@@ -9,7 +9,6 @@ import { useFormContext } from 'react-hook-form'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 import { useUpdateExercise } from '@/hooks/exercises/useUpdateExercise'
 import { useRouter } from 'expo-router'
-import { useQueryClient } from '@tanstack/react-query'
 
 interface EditExerciseFormContentProps {
     exerciseId: number
@@ -24,13 +23,11 @@ export const EditExerciseFormContent = ({ exerciseId }: EditExerciseFormContentP
     } = useFormContext<AddExerciseFormValues>()
 
     const router = useRouter()
-    const queryClient = useQueryClient()
 
     const onSubmit = async (data: AddExerciseFormValues) => {
         await updateExercise({ exerciseId, data })
             .then(() => {
                 router.navigate('/exercises')
-                queryClient.invalidateQueries({ queryKey: ['exercise', exerciseId] })
             })
             .catch((error) => {
                 alert('Error updating an exercise')

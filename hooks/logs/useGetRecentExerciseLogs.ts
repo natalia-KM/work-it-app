@@ -27,7 +27,7 @@ export const useGetRecentExerciseLogs = ({
     }
 
     return useQuery({
-        queryKey: ['recentExerciseLogs', workoutId, exerciseId],
+        queryKey: ['recent-exercise-logs', workoutId, exerciseId],
         queryFn: getExerciseLogs,
         ...options
     })
