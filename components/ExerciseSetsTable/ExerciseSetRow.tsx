@@ -12,12 +12,12 @@ export const ExerciseSetRow = ({ exerciseSet }: ExerciseSetRowProps) => {
     const { setWeight, setReps, setCompleted } = useWorkoutProgressStore()
 
     const handleWeightChange = (weight: string = '0') => {
-        const newWeight = weight === '' ? 0 : parseInt(weight)
+        const newWeight = weight === '' ? 0 : Number(weight)
         setWeight(exerciseSet.set, newWeight)
     }
 
     const handleRepsChange = (reps: string = '0') => {
-        const newReps = reps === '' ? 0 : parseInt(reps)
+        const newReps = reps === '' ? 0 : Math.round(Number(reps))
         setReps(exerciseSet.set, newReps)
     }
 

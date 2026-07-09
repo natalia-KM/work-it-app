@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/expo-sqlite'
 import * as schema from '@/database/schema'
 import { WorkoutTable } from '@/database/schema'
 import { ExerciseWorkoutDetails, Workout } from '@/database/entities'
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, asc, eq, inArray } from 'drizzle-orm'
 
 export const useWorkoutService = () => {
     const db = useSQLiteContext();
@@ -45,10 +45,16 @@ export const useWorkoutService = () => {
                 id: schema.ExerciseTable.id,
                 title: schema.ExerciseTable.title,
                 photo: schema.ExerciseTable.photo,
+                instructions: schema.ExerciseTable.instructions,
                 notes: schema.WorkoutExerciseTable.notes,
                 isCustom: schema.ExerciseTable.isCustom,
                 bestAchieved: schema.WorkoutExerciseTable.bestAchieved,
                 isArchived: schema.WorkoutExerciseTable.isArchived,
+                isOptional: schema.WorkoutExerciseTable.isOptional,
+                sortOrder: schema.WorkoutExerciseTable.sortOrder,
+                targetSets: schema.WorkoutExerciseTable.targetSets,
+                targetReps: schema.WorkoutExerciseTable.targetReps,
+                targetWeight: schema.WorkoutExerciseTable.targetWeight,
                 lastCompleted: schema.WorkoutExerciseTable.lastCompleted
             })
             .from(schema.WorkoutExerciseTable)
@@ -56,11 +62,13 @@ export const useWorkoutService = () => {
                 schema.ExerciseTable,
                 eq(schema.WorkoutExerciseTable.exerciseId, schema.ExerciseTable.id)
             )
-            .where(eq(schema.WorkoutExerciseTable.workoutId, workoutId));
+            .where(eq(schema.WorkoutExerciseTable.workoutId, workoutId))
+            .orderBy(asc(schema.WorkoutExerciseTable.sortOrder), asc(schema.ExerciseTable.title));
 
         return result.map((exercise) => ({
             ...exercise,
             isArchived: exercise.isArchived === 1,
+            isOptional: exercise.isOptional === 1,
             isCustom: exercise.isCustom === 1,
             notes: exercise.notes ?? undefined,
             bestAchieved: exercise.bestAchieved,

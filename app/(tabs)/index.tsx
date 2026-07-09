@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
 import { AddWorkoutButton } from '@/components/AddWorkoutButton/AddWorkoutButton'
 import { Workout } from '@/database/entities'
+import { useGetWorkoutStats } from '@/hooks/logs/useGetWorkoutStats'
 
 const formatWorkoutDate = (date?: Date | null) => {
     if (!date) return 'Not completed yet'
@@ -16,6 +17,7 @@ const formatWorkoutDate = (date?: Date | null) => {
 
 export default function TabOneScreen() {
     const { data: workouts = [], isLoading, isError } = useGetWorkouts()
+    const { data: stats } = useGetWorkoutStats()
     const router = useRouter()
 
     const recentWorkouts = useMemo(() => {
@@ -50,6 +52,28 @@ export default function TabOneScreen() {
             <View style={styles.header}>
                 <Text style={styles.title}>Work It</Text>
                 <AddWorkoutButton/>
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Stats</Text>
+                <View style={styles.statsGrid}>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{stats?.completedWorkouts ?? 0}</Text>
+                        <Text>Workouts</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{stats?.loggedSets ?? 0}</Text>
+                        <Text>Sets</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{Math.round(stats?.totalVolume ?? 0)}</Text>
+                        <Text>Volume</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>{stats?.bestSetScore ?? 0}</Text>
+                        <Text>Best</Text>
+                    </View>
+                </View>
             </View>
 
             <View style={styles.section}>
@@ -109,7 +133,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     section: {
-        flex: 1,
         gap: 8
     },
     sectionTitle: {
@@ -118,5 +141,22 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         marginTop: 8
+    },
+    statsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10
+    },
+    statItem: {
+        width: '47%',
+        minHeight: 74,
+        justifyContent: 'center',
+        padding: 12,
+        borderWidth: 1,
+        borderColor: '#e5e7eb'
+    },
+    statValue: {
+        fontSize: 22,
+        fontWeight: '700'
     }
 });

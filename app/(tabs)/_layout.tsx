@@ -39,6 +39,14 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="import"
+                options={{
+                    title: 'Import',
+                    tabBarShowLabel: true,
+                    tabBarIcon: ({ color }) => <TabBarIcon icon="file-upload-outline" iconColor={color}/>
+                }}
+            />
+            <Tabs.Screen
                 name="exercises"
                 options={{
                     title: 'Exercises',

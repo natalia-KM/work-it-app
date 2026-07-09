@@ -40,7 +40,8 @@ export default function CurrentWorkoutMainScreen() {
                         details: [],
                         restTime: 0,
                         notes: item.notes ?? undefined,
-                        bestAchieved: item.bestAchieved ?? undefined
+                        bestAchieved: item.bestAchieved ?? undefined,
+                        isOptional: item.isOptional
                     }
                 })
                 setExerciseData(initialExercises)
@@ -89,6 +90,20 @@ export default function CurrentWorkoutMainScreen() {
             return
         }
 
+        const incompleteRequiredExercises = session.exercises.filter((exercise) => {
+            if (exercise.isOptional || exercise.completed || exercise.skipped) return false
+
+            return !exercise.details.some((set) => set.isCompleted || set.weight > 0 || set.reps > 0)
+        })
+
+        if (incompleteRequiredExercises.length > 0) {
+            Alert.alert(
+                'Required exercises unfinished',
+                'Complete or skip required exercises before finishing the workout.'
+            )
+            return
+        }
+
         try {
             await finishWorkout.mutateAsync(session)
             resetSession()
@@ -98,11 +113,31 @@ export default function CurrentWorkoutMainScreen() {
         }
     }
 
-    const description = (lastCompleted?: Date | null) => {
-        if (!lastCompleted) {
-            return
+    const description = (item: ExerciseWorkoutDetails) => {
+        const parts = []
+
+        if (item.isOptional) parts.push('Optional')
+        if (item.targetSets || item.targetReps || item.targetWeight) {
+            parts.push(`Target: ${item.targetSets ?? '?'} x ${item.targetReps ?? '?'}${item.targetWeight ? ` @ ${item.targetWeight}kg` : ''}`)
         }
-        return `Last: ${lastCompleted.toDateString()}`
+        if (item.lastCompleted) parts.push(`Last: ${item.lastCompleted.toLocaleDateString()}`)
+        if (item.bestAchieved) parts.push(`Best score: ${item.bestAchieved}`)
+
+        return parts.join(' | ')
+    }
+
+    const getExerciseState = (exerciseId: number) => {
+        return exerciseData.find((exercise) => exercise.exerciseId === exerciseId)
+    }
+
+    const getStatusIcon = (exerciseId: number) => {
+        const state = getExerciseState(exerciseId)
+
+        if (state?.completed) return 'check-circle'
+        if (state?.skipped) return 'minus-circle-outline'
+        if (state?.details.some((set) => set.isCompleted || set.weight > 0 || set.reps > 0)) return 'progress-pencil'
+
+        return 'checkbox-blank-circle-outline'
     }
 
     return (
@@ -125,12 +160,14 @@ export default function CurrentWorkoutMainScreen() {
                                 containerStyle={styles.itemContents}
                                 title={item.title}
                                 onPress={() => onExercisePress(item.id)}
-                                description={description(item.lastCompleted)}
+                                description={description(item)}
                                 left={props => <Image {...props} source={getImageSource(item.photo)}
                                                       style={styles.image}/>}
+                                right={props => <List.Icon {...props} icon={getStatusIcon(item.id)}/>}
                             />
                         )}
                     />
+                    <Text style={styles.hint}>Required exercises should be completed or skipped before finishing. Optional exercises can be left untouched.</Text>
                     <Button
                         mode="contained"
                         loading={finishWorkout.isPending}
@@ -182,5 +219,9 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         marginRight: 8
+    },
+    hint: {
+        marginBottom: 10,
+        color: '#4b5563'
     }
 })

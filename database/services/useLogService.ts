@@ -6,6 +6,7 @@ import { and, desc, eq } from 'drizzle-orm'
 import { ExerciseLog } from '@/database/entities'
 import { WorkoutProgressSession } from '@/store/types'
 import { getBestAchieved, getPersistableSets } from '@/database/services/logSessionMapper'
+import { WorkoutStats } from '@/database/stats'
 
 export const useLogService = () => {
     const db = useSQLiteContext();
@@ -95,5 +96,49 @@ export const useLogService = () => {
         return workoutLogId
     }
 
-    return { getRecentExerciseLogs, saveWorkoutSession }
+    const getWorkoutStats = async (): Promise<WorkoutStats> => {
+        const rows = await drizzleDb
+            .select({
+                workoutLogId: WorkoutLogTable.id,
+                date: WorkoutLogTable.date,
+                details: WorkoutLogExerciseTable.details,
+                bestAchieved: WorkoutLogExerciseTable.bestAchieved
+            })
+            .from(WorkoutLogExerciseTable)
+            .innerJoin(
+                WorkoutLogTable,
+                eq(WorkoutLogExerciseTable.workoutLogId, WorkoutLogTable.id)
+            )
+
+        const workoutIds = new Set<number>()
+        let loggedSets = 0
+        let totalVolume = 0
+        let bestSetScore = 0
+        let lastWorkoutDate: Date | null = null
+
+        rows.forEach((row) => {
+            workoutIds.add(row.workoutLogId)
+            if (!lastWorkoutDate || (row.date && row.date > lastWorkoutDate)) {
+                lastWorkoutDate = row.date
+            }
+
+            bestSetScore = Math.max(bestSetScore, row.bestAchieved ?? 0)
+
+            row.details?.forEach((set) => {
+                loggedSets += 1
+                totalVolume += set.weight * set.reps
+            })
+        })
+
+        return {
+            completedWorkouts: workoutIds.size,
+            loggedExercises: rows.length,
+            loggedSets,
+            totalVolume,
+            bestSetScore,
+            lastWorkoutDate
+        }
+    }
+
+    return { getRecentExerciseLogs, saveWorkoutSession, getWorkoutStats }
 }

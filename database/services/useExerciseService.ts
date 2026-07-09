@@ -20,6 +20,7 @@ export const useExercisesService = () => {
             exerciseId: ExerciseTable.id,
             title: ExerciseTable.title,
             photo: ExerciseTable.photo,
+            instructions: ExerciseTable.instructions,
             isCustom: ExerciseTable.isCustom,
             tabId: MuscleTagsTable.id,
             tabName: MuscleTagsTable.name,
@@ -112,7 +113,7 @@ export const useExercisesService = () => {
 
         if (!rows.length) return null;
 
-        const { title, photo, isCustom } = rows[0];
+        const { title, photo, instructions, isCustom } = rows[0];
 
         const tabs: MuscleTag[] = rows
             .filter((r) => r.tabId && r.tabName && r.tabMuscleGroup)
@@ -126,6 +127,7 @@ export const useExercisesService = () => {
             id,
             title,
             photo,
+            instructions,
             isCustom: Boolean(isCustom),
             tabs
         };
@@ -135,9 +137,9 @@ export const useExercisesService = () => {
         const rows = await exercisesWithTabsQuery;
 
         const grouped = rows.reduce((acc, row) => {
-            const { exerciseId, title, photo, isCustom, tabId, tabName, tabMuscleGroup } = row;
+            const { exerciseId, title, photo, instructions, isCustom, tabId, tabName, tabMuscleGroup } = row;
             if (!acc[exerciseId]) {
-                acc[exerciseId] = { id: exerciseId, title, photo, isCustom: Boolean(isCustom), tabs: [] };
+                acc[exerciseId] = { id: exerciseId, title, photo, instructions, isCustom: Boolean(isCustom), tabs: [] };
             }
             if (tabId && tabName && tabMuscleGroup) acc[exerciseId].tabs.push({
                 id: tabId,

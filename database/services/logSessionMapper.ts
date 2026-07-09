@@ -10,5 +10,5 @@ export const getBestAchieved = (exercise: ExerciseProgressLog) => {
     const persistableSets = getPersistableSets(exercise.details)
     if (persistableSets.length === 0) return undefined
 
-    return Math.max(...persistableSets.map((set) => Math.max(set.weight * set.reps, set.reps)))
+    return Math.round(Math.max(...persistableSets.map((set) => Math.max(set.weight * set.reps, set.reps))))
 }

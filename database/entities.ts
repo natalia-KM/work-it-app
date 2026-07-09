@@ -3,6 +3,7 @@ export interface Exercise {
     title: string;
     photo?: string | null;
     isCustom: boolean;
+    instructions?: string | null;
 }
 
 export enum MuscleGroup {
@@ -32,6 +33,11 @@ export interface Workout {
 
 export interface ExerciseWorkoutDetails extends Exercise {
     isArchived: boolean;
+    isOptional: boolean;
+    sortOrder: number;
+    targetSets?: number | null;
+    targetReps?: number | null;
+    targetWeight?: number | null;
     bestAchieved?: number | null
     lastCompleted?: Date | null
     notes?: string | null;

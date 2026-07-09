@@ -7,10 +7,13 @@ Work It is a local-first mobile workout tracker built with Expo and React Native
 - Create workouts with titles, notes, and colors.
 - Add exercises from a seeded library or create custom exercises.
 - Attach custom exercise images that are copied into app document storage.
+- Import messy `.txt` workout notes through a local Node API powered by OpenAI structured outputs.
+- Review imported workouts, exercises, setup cues, targets, and historical logs before saving.
 - Start a workout session, enter sets, reps, and weight, and mark sets complete.
+- Use a checklist-style workout flow with required, optional, completed, and skipped exercises.
 - Finish or cancel an in-progress workout explicitly.
 - Persist completed workout logs and per-exercise log rows in SQLite.
-- Show last workout, last completed exercise date, and best achieved set summary.
+- Show last workout, last completed exercise date, best achieved set summary, and aggregate stats.
 - Keep all data local on-device.
 
 ## Tech Stack
@@ -25,6 +28,8 @@ Work It is a local-first mobile workout tracker built with Expo and React Native
 - React Hook Form and Zod
 - Zustand
 - React Native Paper
+- Tiny Node/Express import API
+- OpenAI Responses API with structured outputs
 - Vitest
 
 ## Screenshots
@@ -48,6 +53,25 @@ npm run start
 ```
 
 Open Expo Go and scan the QR code, or launch an Android/iOS simulator from the Expo CLI.
+
+### AI Notes Import API
+
+The mobile app does not call OpenAI directly. Run the local import API separately and keep the OpenAI key in the Node process environment:
+
+```bash
+$env:OPENAI_API_KEY="your-api-key"
+$env:OPENAI_MODEL="gpt-5.6-terra"
+npm run import-api
+```
+
+If Expo is running on a physical device, set the app endpoint to a LAN-reachable URL before starting Expo:
+
+```bash
+$env:EXPO_PUBLIC_IMPORT_API_URL="http://YOUR-LAN-IP:8787"
+npm run start
+```
+
+For an emulator on the same machine, `http://localhost:8787` may be enough depending on the platform.
 
 ## Quality Gates
 

@@ -14,6 +14,7 @@ interface WorkoutProgressStore {
 
     confirmCurrentExercise: () => void
     completeCurrentExercise: () => void
+    skipCurrentExercise: () => void
     getExerciseDetails: (exerciseId?: number) => ExerciseProgressLogDetails[]
     hasSessionData: () => boolean
 
@@ -25,6 +26,7 @@ interface WorkoutProgressStore {
     setCompleted: (setIndex: number) => void
     setReps: (setIndex: number, reps: number) => void
     setWeight: (setIndex: number, weight: number) => void
+    setCurrentExerciseNotes: (notes: string) => void
     addSet: (reps?: number, weight?: number) => void
 }
 
@@ -83,6 +85,20 @@ export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get)
             return {
                 ...exercise,
                 completed: true,
+                skipped: false,
+                details: state.currentExerciseDetails
+            }
+        })
+    })),
+
+    skipCurrentExercise: () => set((state) => ({
+        exerciseData: state.exerciseData.map((exercise) => {
+            if (exercise.exerciseId !== state.currentExerciseId) return exercise
+
+            return {
+                ...exercise,
+                completed: false,
+                skipped: true,
                 details: state.currentExerciseDetails
             }
         })
@@ -95,7 +111,7 @@ export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get)
 
     hasSessionData: () => {
         const { exerciseData, currentExerciseDetails } = get()
-        return exerciseData.some(exercise => exercise.details.length > 0 || exercise.completed)
+        return exerciseData.some(exercise => exercise.details.length > 0 || exercise.completed || exercise.skipped)
             || currentExerciseDetails.length > 0
     },
 
@@ -129,6 +145,14 @@ export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get)
         set((state) => ({
             currentExerciseDetails: state.currentExerciseDetails.map((details) => {
                 return details.set === setIndex ? { ...details, weight } : details
+            })
+        })),
+    setCurrentExerciseNotes: (notes) =>
+        set((state) => ({
+            exerciseData: state.exerciseData.map((exercise) => {
+                if (exercise.exerciseId !== state.currentExerciseId) return exercise
+
+                return { ...exercise, notes }
             })
         })),
     addSet: (reps, weight) => set((state) => ({

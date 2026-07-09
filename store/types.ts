@@ -11,6 +11,8 @@ export interface ExerciseProgressLog {
     notes?: string
     bestAchieved?: number
     completed?: boolean
+    skipped?: boolean
+    isOptional?: boolean
 }
 
 export interface WorkoutProgressSession {

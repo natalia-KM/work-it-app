@@ -14,7 +14,8 @@ export const useFinishWorkout = () => {
                 queryClient.invalidateQueries({ queryKey: ['workouts'] }),
                 queryClient.invalidateQueries({ queryKey: ['workout', session.workoutId] }),
                 queryClient.invalidateQueries({ queryKey: ['workout-exercises', session.workoutId] }),
-                queryClient.invalidateQueries({ queryKey: ['recent-exercise-logs', session.workoutId] })
+                queryClient.invalidateQueries({ queryKey: ['recent-exercise-logs', session.workoutId] }),
+                queryClient.invalidateQueries({ queryKey: ['workout-stats'] })
             ])
         }
     })

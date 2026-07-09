@@ -1,5 +1,5 @@
 import { useGetRecentExerciseLogs } from '@/hooks/logs/useGetRecentExerciseLogs'
-import { Appbar, Button, Text } from 'react-native-paper'
+import { Appbar, Button, Text, TextInput } from 'react-native-paper'
 import { View } from '@/components/Themed'
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
 import { useWorkoutProgressStore } from '@/store'
@@ -19,6 +19,9 @@ export default function CurrentWorkoutExerciseScreen() {
         setCurrentExerciseDetails,
         confirmCurrentExercise,
         completeCurrentExercise,
+        skipCurrentExercise,
+        setCurrentExerciseNotes,
+        exerciseData,
         addSet
     } = useWorkoutProgressStore()
 
@@ -71,6 +74,7 @@ export default function CurrentWorkoutExerciseScreen() {
     }
 
     const selectedExercise = exercise.find(item => item.id === exerciseId)
+    const exerciseProgress = exerciseData.find(item => item.exerciseId === exerciseId)
 
     if (!selectedExercise) {
         return <Text>Exercise unavailable</Text>
@@ -94,6 +98,23 @@ export default function CurrentWorkoutExerciseScreen() {
         })
     }
 
+    const handleSkip = () => {
+        skipCurrentExercise()
+
+        router.replace({
+            pathname: '/(workouts)/current-workout-main',
+            params: { workoutId }
+        })
+    }
+
+    const targetDescription = [
+        selectedExercise.isOptional ? 'Optional' : 'Required',
+        selectedExercise.targetSets || selectedExercise.targetReps
+            ? `Target: ${selectedExercise.targetSets ?? '?'} x ${selectedExercise.targetReps ?? '?'}${selectedExercise.targetWeight ? ` @ ${selectedExercise.targetWeight}kg` : ''}`
+            : undefined,
+        selectedExercise.lastCompleted ? `Last: ${selectedExercise.lastCompleted.toLocaleDateString()}` : undefined
+    ].filter(Boolean).join(' | ')
+
     return (
         <>
             <Appbar.Header>
@@ -104,16 +125,33 @@ export default function CurrentWorkoutExerciseScreen() {
                 <View style={styles.container}>
                     <View>
                         <Text variant={'titleMedium'}>{selectedExercise.title}</Text>
-                        <Text>{selectedExercise.notes}</Text>
+                        {targetDescription && <Text>{targetDescription}</Text>}
+                        {selectedExercise.instructions && (
+                            <Text style={styles.instructions}>{selectedExercise.instructions}</Text>
+                        )}
+                        {selectedExercise.notes && <Text>{selectedExercise.notes}</Text>}
                     </View>
+
+                    <TextInput
+                        label="Session notes"
+                        value={exerciseProgress?.notes ?? ''}
+                        onChangeText={setCurrentExerciseNotes}
+                        multiline
+                        style={styles.notesInput}
+                    />
 
                     <View style={styles.exerciseDetailsContainer}>
                         <ExerciseSetsTable/>
                     </View>
 
-                    <Button mode={'outlined'} onPress={handleComplete}>
-                        Complete Exercise
-                    </Button>
+                    <View style={styles.actions}>
+                        <Button mode={'outlined'} onPress={handleSkip}>
+                            Skip
+                        </Button>
+                        <Button mode={'contained'} onPress={handleComplete}>
+                            Complete Exercise
+                        </Button>
+                    </View>
                 </View>
             </SafeAreaView>
         </>
@@ -133,5 +171,18 @@ const styles = StyleSheet.create({
     },
     exerciseDetailsContainer: {
         flex: 1
+    },
+    instructions: {
+        marginTop: 8,
+        color: '#374151'
+    },
+    notesInput: {
+        marginTop: 16,
+        backgroundColor: 'white'
+    },
+    actions: {
+        flexDirection: 'row',
+        gap: 12,
+        justifyContent: 'flex-end'
     }
 })

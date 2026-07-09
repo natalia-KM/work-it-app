@@ -49,11 +49,18 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
                         id={exercise.id.toString()}
                         style={styles.itemWrapper}
                         containerStyle={styles.accordionWrapper}
+                        description={[
+                            exercise.isOptional ? 'Optional' : 'Required',
+                            exercise.targetSets || exercise.targetReps
+                                ? `${exercise.targetSets ?? '?'} x ${exercise.targetReps ?? '?'}${exercise.targetWeight ? ` @ ${exercise.targetWeight}kg` : ''}`
+                                : undefined
+                        ].filter(Boolean).join(' | ')}
                         left={props => <Image {...props} source={getImageSource(exercise.photo)} style={styles.image}/>}
                     >
                         <View style={styles.exerciseSummary}>
                             <Text>Last completed: {formatDate(exercise.lastCompleted)}</Text>
                             <Text>Best set: {exercise.bestAchieved ?? 'Not recorded'}</Text>
+                            {exercise.instructions ? <Text>Setup: {exercise.instructions}</Text> : null}
                             {exercise.notes ? <Text>Notes: {exercise.notes}</Text> : null}
                         </View>
                     </List.Accordion>

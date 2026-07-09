@@ -26,7 +26,8 @@ export const useUpdateExercise = () => {
             id: exerciseId,
             title: data.title,
             photo,
-            isCustom: true
+            isCustom: true,
+            instructions: existingExercise?.instructions
         }
         await updateExercise(exerciseData)
 
