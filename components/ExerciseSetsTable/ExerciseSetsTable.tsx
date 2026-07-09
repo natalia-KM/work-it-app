@@ -2,16 +2,17 @@ import { Table, TableHeaderItem, TableRow, TableRowItem } from '@/components/Exe
 import { Button } from 'react-native-paper'
 import { useWorkoutProgressStore } from '@/store/useWorkoutProgressStore'
 import { ExerciseSetRow } from '@/components/ExerciseSetsTable/ExerciseSetRow'
+import { StyleSheet } from 'react-native'
 
 export const ExerciseSetsTable = () => {
     const { currentExerciseDetails, addSet } = useWorkoutProgressStore()
 
     if (currentExerciseDetails.length === 0) {
         return (
-            <Button onPress={() => {
+            <Button mode="contained-tonal" icon="plus" contentStyle={styles.buttonContent} onPress={() => {
                 addSet()
             }}>
-                Add First Set
+                Add first set
             </Button>
         )
     }
@@ -29,13 +30,22 @@ export const ExerciseSetsTable = () => {
             ))}
 
             <Button
+                mode="contained-tonal"
+                icon="plus"
+                contentStyle={styles.buttonContent}
                 onPress={() => {
                     addSet()
                 }}
             >
-                + Add New Set
+                Add new set
             </Button>
         </Table>
     )
 }
+
+const styles = StyleSheet.create({
+    buttonContent: {
+        minHeight: 44
+    }
+})
 

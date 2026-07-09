@@ -6,7 +6,8 @@ import { WorkoutDetails } from '@/components/WorkoutDetails'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { useMemo } from 'react'
 import { WorkoutDrawer } from '@/components/WorkoutDrawer/WorkoutDrawer'
-import { Text } from '@/components/Themed'
+import { LoadingState, StateView } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 const Drawer = createDrawerNavigator();
 
@@ -19,11 +20,17 @@ export default function WorkoutsListScreen() {
     }, [targetWorkoutId, workouts])
 
     if (isLoading) {
-        return <Text>Loading</Text>
+        return <LoadingState title="Loading workouts"/>
     }
 
     if (!workouts || isError) {
-        return null
+        return (
+            <StateView
+                title="Could not load workouts"
+                description="Your saved workouts could not be read from local storage."
+                icon="alert-circle-outline"
+            />
+        )
     }
 
     if (workouts?.length === 0) {
@@ -40,7 +47,18 @@ export default function WorkoutsListScreen() {
         <Drawer.Navigator
             drawerContent={(props) => <WorkoutDrawer {...props} />}
             initialRouteName={selectedWorkout?.id.toString() ?? workouts[0].id.toString()}
-            screenOptions={{ headerShown: false }}
+            screenOptions={{
+                headerShown: false,
+                drawerActiveTintColor: palette.primary,
+                drawerInactiveTintColor: palette.muted,
+                drawerActiveBackgroundColor: palette.surfaceAlt,
+                drawerStyle: {
+                    backgroundColor: palette.background
+                },
+                drawerLabelStyle: {
+                    fontWeight: '700'
+                }
+            }}
         >
             {workouts.map((workout) => (
                 <Drawer.Screen

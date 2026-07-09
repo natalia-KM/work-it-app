@@ -3,11 +3,11 @@ import { ExerciseList } from '@/components/ExerciseList'
 import { Button, Checkbox, Text } from 'react-native-paper'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAddExercisesToWorkout } from '@/hooks/workouts/useAddExercisesToWorkout'
-import { View } from '@/components/Themed'
-import { StyleSheet } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { StyleSheet, View } from 'react-native'
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
 import { useDeleteWorkoutExercises } from '@/hooks/workouts/useDeleteWorkoutExercises'
+import { AppScreen, ScreenHeader } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 const suffix = (count: number) => {
     if (count > 1) return 's'
@@ -92,8 +92,13 @@ export default function SelectWorkoutExercises() {
     }
 
     return (
-        <SafeAreaView style={styles.screen}>
-            <View style={styles.container}>
+        <AppScreen contentStyle={styles.container}>
+            <ScreenHeader
+                eyebrow="Workout builder"
+                title="Select exercises"
+                description={`${selectedExercises.length} selected for this workout.`}
+            />
+            <View style={styles.listContainer}>
                 <ExerciseList
                     onExercisePress={handleExercisePress}
                     rightIcon={({ exerciseId }) =>
@@ -102,31 +107,34 @@ export default function SelectWorkoutExercises() {
                         />
                     }
                 />
-                <Button
-                    style={styles.submitButton}
-                    onPress={onConfirm}
-                    mode={'contained'}
-                    disabled={!exercises || (exercises.length === 0 && selectedExercises.length === 0)}
-                >
-                    {buttonText}
-                </Button>
             </View>
-        </SafeAreaView>
+            <Button
+                style={styles.submitButton}
+                contentStyle={styles.submitContent}
+                onPress={onConfirm}
+                mode={'contained'}
+                icon="check"
+                disabled={!exercises || (exercises.length === 0 && selectedExercises.length === 0)}
+            >
+                {buttonText}
+            </Button>
+        </AppScreen>
     )
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: 'white'
-    },
     container: {
         flex: 1,
-        paddingVertical: 0,
-        justifyContent: 'center',
-        alignItems: 'center'
+        paddingBottom: 14
+    },
+    listContainer: {
+        flex: 1,
+        backgroundColor: palette.background
     },
     submitButton: {
-        marginBottom: 15
+        marginBottom: 0
+    },
+    submitContent: {
+        minHeight: 50
     }
 });

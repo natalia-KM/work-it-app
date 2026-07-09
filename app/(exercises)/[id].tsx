@@ -1,12 +1,12 @@
 import { useGetExercises } from '@/hooks/exercises/useGetExercises'
-import { Appbar, Text } from 'react-native-paper'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { View } from '@/components/Themed'
-import { StyleSheet } from 'react-native'
+import { Appbar } from 'react-native-paper'
+import { ScrollView, StyleSheet } from 'react-native'
 import { useGetExerciseById } from '@/hooks/exercises/useGetExerciseById'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { EditExerciseForm } from '@/components/AddExerciseForm/EditExerciseForm'
 import { useDeleteExercise } from '@/hooks/exercises/useDeleteExercise'
+import { AppScreen, LoadingState, StateView } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 export default function EditExercise() {
     const { id: exerciseId } = useLocalSearchParams<{ id: string }>();
@@ -30,36 +30,45 @@ export default function EditExercise() {
     }
 
     if (isExerciseLoading || isExerciseListLoading) {
-        return <Text>Loading...</Text>
+        return <LoadingState title="Loading exercise"/>
     }
 
     if (isExerciseError || isExerciseListError || !exerciseData) {
-        return <Text>Something went wrong...</Text>
+        return (
+            <StateView
+                title="Could not load exercise"
+                description="This exercise is unavailable."
+                icon="alert-circle-outline"
+            />
+        )
     }
 
     return (
         <>
-            <Appbar.Header>
+            <Appbar.Header style={styles.appbar}>
                 <Appbar.BackAction onPress={() => router.navigate('/exercises')}/>
                 <Appbar.Content title={exerciseData.title}/>
                 {exerciseData.isCustom && <Appbar.Action icon="delete-outline" onPress={handleDelete}/>}
             </Appbar.Header>
-            <SafeAreaView style={styles.screen}>
-                <View style={styles.container}>
+            <AppScreen contentStyle={styles.screenContent}>
+                <ScrollView contentContainerStyle={styles.container}>
                     <EditExerciseForm exercises={exercises} exerciseData={exerciseData}/>
-                </View>
-            </SafeAreaView>
+                </ScrollView>
+            </AppScreen>
         </>
     )
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: 'white'
+    appbar: {
+        backgroundColor: palette.surface
+    },
+    screenContent: {
+        paddingHorizontal: 0,
+        paddingVertical: 0
     },
     container: {
-        paddingVertical: 0,
-        paddingHorizontal: 25
+        flexGrow: 1,
+        padding: 20
     }
 });

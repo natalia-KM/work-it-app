@@ -1,11 +1,12 @@
-import { FlatList, Image, StyleProp, ViewStyle } from 'react-native'
+import { FlatList, Image, StyleProp, View, ViewStyle } from 'react-native'
 import styles from '@/components/ExerciseList/styles'
-import { Text } from '@/components/Themed'
 import { ExerciseDetails } from '@/database/entities'
 import { useGetExercisesWithTabs } from '@/hooks/exercises/useGetExercisesWithTabs'
 import { getImageSource } from '@/components/utils/getImageSource'
 import { ReactNode, useMemo, useState } from 'react'
-import { List, Searchbar } from 'react-native-paper';
+import { Card, Chip, List, Searchbar, Text } from 'react-native-paper';
+import { LoadingState, StateView } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 interface ExerciseListProps {
     onExercisePress: (exerciseId: number) => void
@@ -33,18 +34,33 @@ export const ExerciseList = ({
         return exercises
     }, [exercises, searchQuery])
 
-    if (isLoading) return <Text>Loading...</Text>;
-    if (isError) return <Text>Error loading exercises</Text>;
+    if (isLoading) return <LoadingState title="Loading exercises"/>;
+    if (isError) {
+        return (
+            <StateView
+                title="Could not load exercises"
+                description="Your exercise library could not be read from local storage."
+                icon="alert-circle-outline"
+            />
+        )
+    }
 
     if (exercises?.length === 0) {
-        return <Text>No exercises!</Text>;
+        return (
+            <StateView
+                title="No exercises yet"
+                description="Add exercises to build workouts and track set history."
+                icon="arm-flex-outline"
+            />
+        )
     }
 
     return (
         <>
             <Searchbar
-                placeholder="Search"
+                placeholder="Search exercises"
                 style={styles.searchBar}
+                inputStyle={styles.searchInput}
                 onChangeText={setSearchQuery}
                 value={searchQuery}
             />
@@ -54,15 +70,31 @@ export const ExerciseList = ({
                 contentContainerStyle={styles.container}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }: { item: ExerciseDetails }) => (
-                    <List.Item
+                    <Card
+                        mode="contained"
                         style={styles.itemWrapper}
-                        containerStyle={styles.itemContents}
-                        title={item.title}
                         onPress={() => onExercisePress(item.id)}
-                        description={item.tabs?.map((tab) => tab.name).join(', ')}
-                        left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
-                        right={(props) => rightIcon?.({ exerciseId: item.id, ...props })}
-                    />
+                    >
+                        <List.Item
+                            containerStyle={styles.itemContents}
+                            title={item.title}
+                            titleStyle={styles.title}
+                            description={() => (
+                                <View style={styles.chips}>
+                                    {item.tabs?.slice(0, 3).map((tab) => (
+                                        <Chip key={tab.id} compact style={styles.chip} textStyle={styles.chipText}>
+                                            {tab.name}
+                                        </Chip>
+                                    ))}
+                                    {!item.tabs?.length && (
+                                        <Text variant="bodySmall" style={styles.subtitle}>No muscle tags</Text>
+                                    )}
+                                </View>
+                            )}
+                            left={props => <Image {...props} source={getImageSource(item.photo)} style={styles.image}/>}
+                            right={(props) => rightIcon?.({ exerciseId: item.id, color: palette.primary, style: props.style })}
+                        />
+                    </Card>
                 )}
             />
         </>

@@ -1,13 +1,13 @@
-import { View } from '@/components/Themed'
-import { StyleSheet } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
 import { AddExerciseForm } from '@/components/AddExerciseForm'
 import { Appbar } from 'react-native-paper'
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AddExerciseFormValues, formSchema } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 import { useGetExercises } from '@/hooks/exercises/useGetExercises'
 import { useRouter } from 'expo-router'
+import { AppScreen } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 export default function AddExercise() {
     const { data: exercises = [] } = useGetExercises()
@@ -27,28 +27,31 @@ export default function AddExercise() {
 
     return (
         <>
-            <Appbar.Header>
+            <Appbar.Header style={styles.appbar}>
                 <Appbar.BackAction onPress={() => router.navigate('/exercises')}/>
-                <Appbar.Content title={'Add Exercise'}/>
+                <Appbar.Content title={'Add exercise'}/>
             </Appbar.Header>
-            <SafeAreaView style={styles.screen}>
-                <View style={styles.container}>
+            <AppScreen contentStyle={styles.screenContent}>
+                <ScrollView contentContainerStyle={styles.container}>
                     <FormProvider {...methods}>
                         <AddExerciseForm/>
                     </FormProvider>
-                </View>
-            </SafeAreaView>
+                </ScrollView>
+            </AppScreen>
         </>
     )
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: 'white'
+    appbar: {
+        backgroundColor: palette.surface
+    },
+    screenContent: {
+        paddingHorizontal: 0,
+        paddingVertical: 0
     },
     container: {
-        paddingVertical: 0,
-        paddingHorizontal: 25
+        flexGrow: 1,
+        padding: 20
     }
 });

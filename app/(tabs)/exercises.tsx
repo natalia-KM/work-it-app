@@ -1,24 +1,25 @@
 import { StyleSheet } from 'react-native';
-import { View } from '@/components/Themed';
 import { ExerciseList } from '@/components/ExerciseList'
 import { useRouter } from 'expo-router'
+import { AppScreen, ScreenHeader } from '@/components/ui/Screen'
 
 export default function ExerciseListingScreen() {
-    // TODO: update children to not set 85% width, rather the container should do it
     const router = useRouter();
 
     return (
-        <View style={styles.container}>
+        <AppScreen contentStyle={styles.container}>
+            <ScreenHeader
+                eyebrow="Library"
+                title="Exercises"
+                description="Browse movements, muscle tags, and custom exercises."
+            />
             <ExerciseList onExercisePress={(exerciseId) => router.push(`/(exercises)/${exerciseId.toString()}`)}/>
-        </View>
+        </AppScreen>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 10
+        paddingTop: 18
     }
 });

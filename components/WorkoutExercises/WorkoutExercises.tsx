@@ -1,13 +1,13 @@
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
-import { Button, List, Text } from 'react-native-paper'
-import { Image, StyleSheet } from 'react-native'
+import { Button, Card, List, Text } from 'react-native-paper'
+import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import { NoItemsFound } from '@/components/NoItemsFound'
-import { View } from '@/components/Themed'
 import { getImageSource } from '@/components/utils/getImageSource'
 import { AddWorkoutExercisesButton } from '@/components/WorkoutExercises/AddWorkoutExercisesButton'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useWorkoutProgressStore } from '@/store/useWorkoutProgressStore'
+import { palette } from '@/constants/theme'
+import { StateView } from '@/components/ui/Screen'
 
 interface WorkoutExercisesProps {
     workoutId: number
@@ -26,7 +26,13 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
     const router = useRouter()
 
     if (isExerciseError || !exercises) {
-        return <Text>Could not load exercises</Text>
+        return (
+            <StateView
+                title="Could not load exercises"
+                description="This workout could not be read from local storage."
+                icon="alert-circle-outline"
+            />
+        )
     }
 
     if (exercises.length === 0) {
@@ -40,87 +46,96 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
     }
 
     return (
-        <SafeAreaView style={styles.area}>
-            <View style={styles.list}>
+        <View style={styles.area}>
+            <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
                 {exercises.map(exercise => (
-                    <List.Accordion
-                        key={exercise.id}
-                        title={exercise.title}
-                        id={exercise.id.toString()}
-                        style={styles.itemWrapper}
-                        containerStyle={styles.accordionWrapper}
-                        description={[
-                            exercise.isOptional ? 'Optional' : 'Required',
-                            exercise.targetSets || exercise.targetReps
-                                ? `${exercise.targetSets ?? '?'} x ${exercise.targetReps ?? '?'}${exercise.targetWeight ? ` @ ${exercise.targetWeight}kg` : ''}`
-                                : undefined
-                        ].filter(Boolean).join(' | ')}
-                        left={props => <Image {...props} source={getImageSource(exercise.photo)} style={styles.image}/>}
-                    >
-                        <View style={styles.exerciseSummary}>
-                            <Text>Last completed: {formatDate(exercise.lastCompleted)}</Text>
-                            <Text>Best set: {exercise.bestAchieved ?? 'Not recorded'}</Text>
-                            {exercise.instructions ? <Text>Setup: {exercise.instructions}</Text> : null}
-                            {exercise.notes ? <Text>Notes: {exercise.notes}</Text> : null}
-                        </View>
-                    </List.Accordion>
+                    <Card key={exercise.id} mode="contained" style={styles.card}>
+                        <List.Accordion
+                            title={exercise.title}
+                            id={exercise.id.toString()}
+                            style={styles.itemWrapper}
+                            titleStyle={styles.itemTitle}
+                            description={[
+                                exercise.isOptional ? 'Optional' : 'Required',
+                                exercise.targetSets || exercise.targetReps
+                                    ? `${exercise.targetSets ?? '?'} x ${exercise.targetReps ?? '?'}${exercise.targetWeight ? ` @ ${exercise.targetWeight}kg` : ''}`
+                                    : undefined
+                            ].filter(Boolean).join(' | ')}
+                            descriptionStyle={styles.itemDescription}
+                            left={props => <Image {...props} source={getImageSource(exercise.photo)} style={styles.image}/>}
+                        >
+                            <View style={styles.exerciseSummary}>
+                                <Text variant="bodyMedium" style={styles.summaryLine}>Last completed: {formatDate(exercise.lastCompleted)}</Text>
+                                <Text variant="bodyMedium" style={styles.summaryLine}>Best set: {exercise.bestAchieved ?? 'Not recorded'}</Text>
+                                {exercise.instructions ? <Text variant="bodyMedium" style={styles.summaryLine}>Setup: {exercise.instructions}</Text> : null}
+                                {exercise.notes ? <Text variant="bodyMedium" style={styles.summaryLine}>Notes: {exercise.notes}</Text> : null}
+                            </View>
+                        </List.Accordion>
+                    </Card>
                 ))}
-            </View>
-            <Button onPress={() => {
+            </ScrollView>
+            <Button mode="contained" icon="play" contentStyle={styles.startButtonContent} onPress={() => {
                 resetSession()
                 setWorkoutDetails(workoutId)
                 router.navigate({
                     pathname: '/(workouts)/current-workout-main'
                 })
             }}>
-                Start Workout
+                Start workout
             </Button>
-        </SafeAreaView>
+        </View>
     )
 }
 
 const styles = StyleSheet.create({
     area: {
         flex: 1,
-        backgroundColor: 'white',
         width: '100%',
-        justifyContent: 'center',
-        alignItems: 'center'
+        gap: 16
     },
     list: {
         flex: 1,
-        width: '85%',
-        gap: 15
+        width: '100%'
     },
-    container: {
-        display: 'flex',
-        alignContent: 'center',
-        justifyContent: 'center',
-        paddingTop: 2
-    },
-    accordionWrapper: {
-        alignItems: 'center'
+    listContent: {
+        gap: 12,
+        paddingBottom: 12
     },
     itemWrapper: {
-        width: '98%',
-        alignSelf: 'center',
-        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.16)',
-        backgroundColor: 'white',
-        paddingHorizontal: 6,
-        paddingVertical: 2
+        backgroundColor: palette.surface,
+        borderRadius: 8
+    },
+    card: {
+        backgroundColor: palette.surface
+    },
+    itemTitle: {
+        color: palette.ink,
+        fontWeight: '800'
     },
     image: {
-        width: 48,
-        height: 48,
+        width: 54,
+        height: 54,
         marginRight: 6,
-        marginLeft: 4
+        marginLeft: 4,
+        borderRadius: 8,
+        backgroundColor: palette.surfaceAlt
+    },
+    itemDescription: {
+        color: palette.muted
     },
     exerciseSummary: {
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        gap: 4
+        paddingBottom: 16,
+        gap: 6
+    },
+    summaryLine: {
+        color: palette.muted,
+        lineHeight: 20
     },
     addButton: {
         marginBottom: 10
+    },
+    startButtonContent: {
+        minHeight: 48
     }
 })

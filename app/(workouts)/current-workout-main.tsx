@@ -1,14 +1,15 @@
-import { Text, View } from '@/components/Themed';
+import { Alert, FlatList, Image, StyleSheet, View } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Appbar, Button, List } from 'react-native-paper'
+import { Appbar, Button, Card, Chip, List, Text } from 'react-native-paper'
 import { useGetWorkout } from '@/hooks/workouts/useGetWorkout'
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
-import { Alert, FlatList, Image, StyleSheet } from 'react-native'
 import { ExerciseWorkoutDetails } from '@/database/entities'
 import { getImageSource } from '@/components/utils/getImageSource'
 import { ExerciseProgressLog, useWorkoutProgressStore } from '@/store'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFinishWorkout } from '@/hooks/logs/useFinishWorkout'
+import { StateView } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 export default function CurrentWorkoutMainScreen() {
     const {
@@ -51,7 +52,13 @@ export default function CurrentWorkoutMainScreen() {
     const router = useRouter()
 
     if (!workout || isError) {
-        return <Text>Something went wrong...</Text>
+        return (
+            <StateView
+                title="Could not load workout"
+                description="The active workout could not be read."
+                icon="alert-circle-outline"
+            />
+        )
     }
 
     const onExercisePress = (itemId: number) => {
@@ -149,27 +156,40 @@ export default function CurrentWorkoutMainScreen() {
             </Appbar.Header>
             <SafeAreaView style={styles.screen}>
                 <View style={styles.screenContainer}>
+                    <View style={styles.hero}>
+                        <Text variant="labelLarge" style={styles.eyebrow}>In progress</Text>
+                        <Text variant="headlineSmall" style={styles.heroTitle}>{workout.title}</Text>
+                        <Text variant="bodyMedium" style={styles.heroText}>Complete or skip required exercises before finishing.</Text>
+                    </View>
                     <FlatList
                         data={exercises}
                         style={styles.list}
                         contentContainerStyle={styles.container}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }: { item: ExerciseWorkoutDetails }) => (
-                            <List.Item
-                                style={styles.itemWrapper}
-                                containerStyle={styles.itemContents}
-                                title={item.title}
-                                onPress={() => onExercisePress(item.id)}
-                                description={description(item)}
-                                left={props => <Image {...props} source={getImageSource(item.photo)}
-                                                      style={styles.image}/>}
-                                right={props => <List.Icon {...props} icon={getStatusIcon(item.id)}/>}
-                            />
+                            <Card mode="contained" style={styles.itemWrapper} onPress={() => onExercisePress(item.id)}>
+                                <List.Item
+                                    containerStyle={styles.itemContents}
+                                    title={item.title}
+                                    titleStyle={styles.itemTitle}
+                                    description={() => (
+                                        <View style={styles.metaRow}>
+                                            {(description(item).split(' | ').filter(Boolean)).map((part) => (
+                                                <Chip key={part} compact style={styles.metaChip}>{part}</Chip>
+                                            ))}
+                                        </View>
+                                    )}
+                                    left={props => <Image {...props} source={getImageSource(item.photo)}
+                                                          style={styles.image}/>}
+                                    right={props => <List.Icon {...props} icon={getStatusIcon(item.id)} color={palette.primary}/>}
+                                />
+                            </Card>
                         )}
                     />
-                    <Text style={styles.hint}>Required exercises should be completed or skipped before finishing. Optional exercises can be left untouched.</Text>
                     <Button
                         mode="contained"
+                        icon="flag-checkered"
+                        contentStyle={styles.finishContent}
                         loading={finishWorkout.isPending}
                         disabled={finishWorkout.isPending}
                         onPress={handleFinishWorkout}
@@ -185,43 +205,69 @@ export default function CurrentWorkoutMainScreen() {
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: palette.background,
         justifyContent: 'center',
         alignItems: 'stretch'
     },
     screenContainer: {
-        paddingVertical: 0,
-        paddingHorizontal: 25,
-        flex: 1
+        paddingVertical: 18,
+        paddingHorizontal: 20,
+        flex: 1,
+        gap: 16
+    },
+    hero: {
+        padding: 18,
+        borderRadius: 8,
+        backgroundColor: palette.primary,
+        gap: 4
+    },
+    eyebrow: {
+        color: '#D7F4EF',
+        textTransform: 'uppercase'
+    },
+    heroTitle: {
+        color: '#FFFFFF',
+        fontWeight: '800'
+    },
+    heroText: {
+        color: '#E8FFFB'
     },
     list: {
         flex: 1,
         width: '100%'
     },
     container: {
-        display: 'flex',
-        alignContent: 'center',
-        justifyContent: 'center',
-        paddingTop: 2
+        paddingBottom: 4,
+        gap: 12
     },
     itemContents: {
-        alignItems: 'center'
+        alignItems: 'center',
+        minHeight: 84
     },
     itemWrapper: {
-        width: '98%',
-        alignSelf: 'center',
-        marginBottom: 12,
-        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.16)',
-        paddingHorizontal: 4,
-        paddingVertical: 0
+        backgroundColor: palette.surface
+    },
+    itemTitle: {
+        color: palette.ink,
+        fontWeight: '800'
     },
     image: {
         width: 64,
         height: 64,
-        marginRight: 8
+        marginRight: 8,
+        borderRadius: 8,
+        backgroundColor: palette.surfaceAlt
     },
-    hint: {
-        marginBottom: 10,
-        color: '#4b5563'
+    metaRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+        paddingTop: 4
+    },
+    metaChip: {
+        backgroundColor: palette.surfaceAlt
+    },
+    finishContent: {
+        minHeight: 50
     }
 })

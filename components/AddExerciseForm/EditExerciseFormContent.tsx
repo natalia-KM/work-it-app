@@ -1,5 +1,4 @@
-import { KeyboardAvoidingView, Platform } from 'react-native'
-import { View } from '@/components/Themed'
+import { KeyboardAvoidingView, Platform, View } from 'react-native'
 import { ExerciseImageUpload } from '@/components/AddExerciseForm/ExerciseImageUpload'
 import { ExerciseTitleField } from '@/components/AddExerciseForm/ExerciseTitleField'
 import { MuscleTagsSelection } from '@/components/AddExerciseForm/MuscleTagsSelection'
@@ -51,7 +50,9 @@ export const EditExerciseFormContent = ({ exerciseId }: EditExerciseFormContentP
 
             <Button
                 mode={'contained'}
+                icon="check"
                 style={styles.submitButton}
+                contentStyle={styles.submitContent}
                 onPress={handleSubmit(onSubmit)}
                 disabled={!isDirty || !isValid}
             >

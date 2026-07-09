@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Alert, ScrollView, StyleSheet } from 'react-native'
+import { Alert, ScrollView, StyleSheet, View } from 'react-native'
 import * as DocumentPicker from 'expo-document-picker'
 import * as FileSystem from 'expo-file-system'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { Button, Divider, IconButton, Switch, Text, TextInput } from 'react-native-paper'
+import { Button, Card, Chip, Divider, IconButton, Switch, Text, TextInput } from 'react-native-paper'
 import { useRouter } from 'expo-router'
-import { View } from '@/components/Themed'
 import { ImportExercise, ImportExerciseLog, WorkoutNotesImport, workoutNotesImportSchema } from '@/database/importTypes'
 import { useParseWorkoutNotes } from '@/hooks/imports/useParseWorkoutNotes'
 import { useSaveWorkoutNotesImport } from '@/hooks/imports/useSaveWorkoutNotesImport'
+import { AppScreen, ScreenHeader } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 const updateAt = <T,>(items: T[], index: number, updater: (item: T) => T) => {
     return items.map((item, itemIndex) => itemIndex === index ? updater(item) : item)
@@ -126,49 +126,62 @@ export default function ImportWorkoutNotesScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.screen}>
+        <AppScreen contentStyle={styles.screenContent}>
             <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.header}>
-                    <View style={styles.headerText}>
-                        <Text variant="headlineSmall">Import notes</Text>
-                        <Text>Choose a workout note text file, review the AI cleanup, then save it as real workout history.</Text>
-                    </View>
-                    <Button
-                        mode="contained"
-                        icon="file-upload-outline"
-                        loading={parseWorkoutNotes.isPending}
-                        disabled={parseWorkoutNotes.isPending}
-                        onPress={pickAndParseFile}
-                    >
-                        Select .txt
-                    </Button>
-                </View>
+                <ScreenHeader
+                    eyebrow="AI import"
+                    title="Import notes"
+                    description="Choose a workout note text file, review the cleanup, then save it as workout history."
+                    action={(
+                        <Button
+                            mode="contained"
+                            icon="file-upload-outline"
+                            loading={parseWorkoutNotes.isPending}
+                            disabled={parseWorkoutNotes.isPending}
+                            onPress={pickAndParseFile}
+                        >
+                            Select .txt
+                        </Button>
+                    )}
+                />
 
                 {parseWorkoutNotes.error && (
-                    <Text style={styles.errorText}>{parseWorkoutNotes.error.message}</Text>
+                    <Card mode="contained" style={styles.errorBox}>
+                        <Card.Content>
+                            <Text style={styles.errorText}>{parseWorkoutNotes.error.message}</Text>
+                        </Card.Content>
+                    </Card>
                 )}
 
                 {parsedImport && (
                     <View style={styles.review}>
-                        <View style={styles.summary}>
-                            <Text variant="titleMedium">{parsedImport.sourceName}</Text>
+                        <Card mode="contained" style={styles.summary}>
+                            <Card.Content style={styles.summaryContent}>
+                            <Text variant="titleMedium" style={styles.blockTitle}>{parsedImport.sourceName}</Text>
                             {parsedImport.summary && <Text>{parsedImport.summary}</Text>}
-                            <Text>{counts.workouts} workouts, {counts.exercises} exercises, {counts.logs} dated logs</Text>
-                        </View>
+                                <View style={styles.countRow}>
+                                    <Chip compact style={styles.summaryChip}>{counts.workouts} workouts</Chip>
+                                    <Chip compact style={styles.summaryChip}>{counts.exercises} exercises</Chip>
+                                    <Chip compact style={styles.summaryChip}>{counts.logs} dated logs</Chip>
+                                </View>
+                            </Card.Content>
+                        </Card>
 
                         {parsedImport.warnings.length > 0 && (
-                            <View style={styles.warningBox}>
-                                <Text variant="titleSmall">Review warnings</Text>
+                            <Card mode="contained" style={styles.warningBox}>
+                                <Card.Content style={styles.warningContent}>
+                                <Text variant="titleSmall" style={styles.warningTitle}>Review warnings</Text>
                                 {parsedImport.warnings.map((warning, index) => (
-                                    <Text key={`${warning}-${index}`}>- {warning}</Text>
+                                    <Text key={`${warning}-${index}`} style={styles.warningText}>- {warning}</Text>
                                 ))}
-                            </View>
+                                </Card.Content>
+                            </Card>
                         )}
 
                         {parsedImport.workouts.map((workout, workoutIndex) => (
                             <View key={`${workout.title}-${workoutIndex}`} style={styles.workoutBlock}>
                                 <View style={styles.rowBetween}>
-                                    <Text variant="titleLarge">Workout</Text>
+                                    <Text variant="titleLarge" style={styles.blockTitle}>Workout</Text>
                                     <IconButton icon="delete-outline" onPress={() => removeWorkout(workoutIndex)}/>
                                 </View>
 
@@ -189,7 +202,7 @@ export default function ImportWorkoutNotesScreen() {
                                 {workout.exercises.map((exercise, exerciseIndex) => (
                                     <View key={`${exercise.title}-${exerciseIndex}`} style={styles.exerciseBlock}>
                                         <View style={styles.rowBetween}>
-                                            <Text variant="titleMedium">Exercise</Text>
+                                            <Text variant="titleMedium" style={styles.blockTitle}>Exercise</Text>
                                             <IconButton icon="delete-outline" onPress={() => removeExercise(workoutIndex, exerciseIndex)}/>
                                         </View>
 
@@ -215,7 +228,7 @@ export default function ImportWorkoutNotesScreen() {
                                         />
 
                                         <View style={styles.rowBetween}>
-                                            <Text>Optional exercise</Text>
+                                            <Text style={styles.fieldLabel}>Optional exercise</Text>
                                             <Switch
                                                 value={exercise.isOptional}
                                                 onValueChange={(isOptional) => updateExercise(workoutIndex, exerciseIndex, (item) => ({ ...item, isOptional }))}
@@ -249,7 +262,7 @@ export default function ImportWorkoutNotesScreen() {
                                         {exercise.logs.map((log, logIndex) => (
                                             <View key={`${log.date}-${logIndex}`} style={styles.logBlock}>
                                                 <View style={styles.rowBetween}>
-                                                    <Text variant="titleSmall">{log.date}</Text>
+                                                    <Text variant="titleSmall" style={styles.blockTitle}>{log.date}</Text>
                                                     <IconButton icon="close" onPress={() => removeLog(workoutIndex, exerciseIndex, logIndex)}/>
                                                 </View>
                                                 <TextInput
@@ -287,68 +300,88 @@ export default function ImportWorkoutNotesScreen() {
                                         ))}
                                     </View>
                                 ))}
-                                <Divider/>
+                                <Divider style={styles.divider}/>
                             </View>
                         ))}
 
                         <Button
                             mode="contained"
                             icon="content-save-outline"
+                            contentStyle={styles.saveButton}
                             loading={saveWorkoutNotesImport.isPending}
                             disabled={saveWorkoutNotesImport.isPending || counts.workouts === 0}
                             onPress={saveImport}
                         >
-                            Save Import
+                            Save import
                         </Button>
                     </View>
                 )}
             </ScrollView>
-        </SafeAreaView>
+        </AppScreen>
     )
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: 'white'
+    screenContent: {
+        paddingHorizontal: 0,
+        paddingVertical: 0
     },
     container: {
         padding: 20,
         gap: 18
     },
-    header: {
-        gap: 14
-    },
-    headerText: {
-        gap: 6
-    },
     review: {
         gap: 16
     },
     summary: {
+        backgroundColor: palette.surface
+    },
+    summaryContent: {
         gap: 6
     },
+    countRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        paddingTop: 6
+    },
+    summaryChip: {
+        backgroundColor: palette.surfaceAlt
+    },
     warningBox: {
-        gap: 6,
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#d97706',
-        backgroundColor: '#fff7ed'
+        backgroundColor: '#FFF7ED'
+    },
+    warningContent: {
+        gap: 6
+    },
+    warningTitle: {
+        color: palette.warning,
+        fontWeight: '800'
+    },
+    warningText: {
+        color: '#7C2D12'
     },
     workoutBlock: {
-        gap: 10
+        gap: 10,
+        padding: 16,
+        borderRadius: 8,
+        backgroundColor: palette.surface,
+        borderWidth: 1,
+        borderColor: palette.line
     },
     exerciseBlock: {
         gap: 10,
-        paddingVertical: 10,
-        borderTopWidth: 1,
-        borderTopColor: '#e5e7eb'
+        padding: 12,
+        borderRadius: 8,
+        backgroundColor: palette.surfaceAlt
     },
     logBlock: {
         gap: 8,
-        padding: 10,
+        padding: 12,
+        borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#e5e7eb'
+        borderColor: palette.line,
+        backgroundColor: palette.surface
     },
     rowBetween: {
         flexDirection: 'row',
@@ -369,16 +402,34 @@ const styles = StyleSheet.create({
         gap: 8
     },
     setLabel: {
-        width: 50
+        width: 50,
+        color: palette.muted
     },
     setInput: {
         flex: 1
     },
     input: {
-        backgroundColor: 'white'
+        backgroundColor: palette.surface
     },
     errorText: {
-        color: '#b91c1c'
+        color: palette.error
+    },
+    errorBox: {
+        backgroundColor: '#FEE4E2'
+    },
+    blockTitle: {
+        color: palette.ink,
+        fontWeight: '800'
+    },
+    fieldLabel: {
+        color: palette.ink,
+        fontWeight: '600'
+    },
+    divider: {
+        backgroundColor: palette.line
+    },
+    saveButton: {
+        minHeight: 50
     }
 })
 

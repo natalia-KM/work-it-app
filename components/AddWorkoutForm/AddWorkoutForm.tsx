@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Platform, Pressable } from 'react-native'
+import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native'
 import { styles } from '@/components/AddWorkoutForm/styles'
 import { Controller, useForm } from 'react-hook-form'
 import { formSchema, WorkoutFormValues } from '@/components/AddWorkoutForm/AddWorkoutValidationSchema'
@@ -7,9 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
 import { useCreateWorkout } from '@/hooks/workouts/useCreateWorkout'
 import { useRouter } from 'expo-router'
-import { View } from '@/components/Themed'
 import { ColorPicker } from '@/components/ColorPicker'
 import { useState } from 'react'
+import { palette } from '@/constants/theme'
 
 interface AddWorkoutFormProps {
     onClose: () => void
@@ -59,18 +59,15 @@ export const AddWorkoutForm = ({ onClose }: AddWorkoutFormProps) => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // different handling per OS
         >
             <View style={styles.header}>
-                <Text variant="titleLarge">Create Workout</Text>
+                <View style={styles.headerText}>
+                    <Text variant="titleLarge" style={styles.title}>Create workout</Text>
+                    <Text variant="bodyMedium" style={styles.subtitle}>Give it a name and color so it is easy to spot later.</Text>
+                </View>
                 <Pressable
                     onPress={() => setIsColorPickerOpen(true)}
-                    style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: '50%',
-                        backgroundColor: selectedColor ?? 'transparent',
-                        margin: 5,
-                        borderWidth: 2,
-                        borderColor: 'black'
-                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Choose workout color"
+                    style={[styles.colorSwatch, { backgroundColor: selectedColor ?? palette.primary }]}
                 />
             </View>
 
@@ -128,6 +125,7 @@ export const AddWorkoutForm = ({ onClose }: AddWorkoutFormProps) => {
 
             <Button
                 mode={'contained'}
+                icon="check"
                 style={styles.submitButton}
                 disabled={!formState.isValid}
                 onPress={handleSubmit(onSubmit)}

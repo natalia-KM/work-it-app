@@ -1,13 +1,13 @@
-import { FlatList, StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
-import { ActivityIndicator, Button, List } from 'react-native-paper'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Card, List, Text } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { useMemo } from 'react'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
 import { AddWorkoutButton } from '@/components/AddWorkoutButton/AddWorkoutButton'
 import { Workout } from '@/database/entities'
 import { useGetWorkoutStats } from '@/hooks/logs/useGetWorkoutStats'
+import { AppScreen, LoadingState, MetricCard, ScreenHeader, SectionHeader, StateView } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 const formatWorkoutDate = (date?: Date | null) => {
     if (!date) return 'Not completed yet'
@@ -32,131 +32,125 @@ export default function TabOneScreen() {
     }, [workouts])
 
     if (isLoading) {
-        return (
-            <View style={styles.centered}>
-                <ActivityIndicator/>
-            </View>
-        )
+        return <LoadingState title="Loading dashboard"/>
     }
 
     if (isError) {
         return (
-            <View style={styles.centered}>
-                <Text>Could not load dashboard</Text>
-            </View>
+            <StateView
+                title="Could not load dashboard"
+                description="The local workout database did not respond. Restart the app and try again."
+                icon="alert-circle-outline"
+            />
         )
     }
 
     return (
-        <SafeAreaView style={styles.screen}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Work It</Text>
-                <AddWorkoutButton/>
-            </View>
+        <AppScreen contentStyle={styles.screenContent}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                <ScreenHeader
+                    eyebrow="Workout tracker"
+                    title="Work It"
+                    description="Plan sessions, log sets, and keep your recent progress close at hand."
+                    action={<AddWorkoutButton compact/>}
+                />
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Stats</Text>
-                <View style={styles.statsGrid}>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{stats?.completedWorkouts ?? 0}</Text>
-                        <Text>Workouts</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{stats?.loggedSets ?? 0}</Text>
-                        <Text>Sets</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{Math.round(stats?.totalVolume ?? 0)}</Text>
-                        <Text>Volume</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>{stats?.bestSetScore ?? 0}</Text>
-                        <Text>Best</Text>
+                <View style={styles.section}>
+                    <SectionHeader title="Training snapshot"/>
+                    <View style={styles.statsGrid}>
+                        <MetricCard label="Workouts" value={stats?.completedWorkouts ?? 0} icon="calendar-check-outline"/>
+                        <MetricCard label="Logged sets" value={stats?.loggedSets ?? 0} icon="format-list-checks"/>
+                        <MetricCard label="Volume" value={Math.round(stats?.totalVolume ?? 0)} icon="weight-kilogram"/>
+                        <MetricCard label="Best score" value={stats?.bestSetScore ?? 0} icon="trophy-outline"/>
                     </View>
                 </View>
-            </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Recent workouts</Text>
-                {recentWorkouts.length > 0 ? (
-                    <FlatList
-                        data={recentWorkouts}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={({ item }: { item: Workout }) => (
-                            <List.Item
-                                title={item.title}
-                                description={formatWorkoutDate(item.lastWorkout)}
-                                left={(props) => <List.Icon {...props} icon="dumbbell"/>}
-                                right={(props) => <List.Icon {...props} icon="chevron-right"/>}
-                                onPress={() => router.navigate({
-                                    pathname: '/(tabs)/workouts',
-                                    params: { targetWorkoutId: item.id.toString() }
-                                })}
-                            />
-                        )}
-                    />
-                ) : (
-                    <Text style={styles.emptyText}>No workouts yet</Text>
-                )}
-            </View>
+                <View style={styles.section}>
+                    <SectionHeader title="Recent workouts"/>
+                    {recentWorkouts.length > 0 ? (
+                        <FlatList
+                            data={recentWorkouts}
+                            scrollEnabled={false}
+                            keyExtractor={(item) => item.id.toString()}
+                            renderItem={({ item }: { item: Workout }) => (
+                                <Card
+                                    mode="contained"
+                                    style={styles.workoutCard}
+                                    onPress={() => router.navigate({
+                                        pathname: '/(tabs)/workouts',
+                                        params: { targetWorkoutId: item.id.toString() }
+                                    })}
+                                >
+                                    <List.Item
+                                        title={item.title}
+                                        description={formatWorkoutDate(item.lastWorkout)}
+                                        titleStyle={styles.workoutTitle}
+                                        descriptionStyle={styles.workoutDescription}
+                                        left={(props) => <List.Icon {...props} icon="dumbbell" color={palette.primary}/>}
+                                        right={(props) => <List.Icon {...props} icon="chevron-right"/>}
+                                    />
+                                </Card>
+                            )}
+                            contentContainerStyle={styles.recentList}
+                        />
+                    ) : (
+                        <Card mode="contained" style={styles.emptyCard}>
+                            <Card.Content style={styles.emptyContent}>
+                                <Text variant="titleMedium" style={styles.workoutTitle}>No workouts yet</Text>
+                                <Text variant="bodyMedium" style={styles.workoutDescription}>Create a workout to start building a repeatable training routine.</Text>
+                            </Card.Content>
+                        </Card>
+                    )}
+                </View>
 
-            <Button
-                mode="outlined"
-                onPress={() => router.navigate('/(tabs)/workouts')}
-            >
-                Open workouts
-            </Button>
-        </SafeAreaView>
+                <Button
+                    mode="contained-tonal"
+                    icon="arrow-right"
+                    onPress={() => router.navigate('/(tabs)/workouts')}
+                >
+                    Open workouts
+                </Button>
+            </ScrollView>
+        </AppScreen>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: 'white',
-        padding: 20,
-        gap: 20
+    screenContent: {
+        paddingHorizontal: 0,
+        paddingVertical: 0
     },
-    centered: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold'
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingVertical: 18,
+        gap: 20,
+        flexGrow: 1
     },
     section: {
-        gap: 8
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600'
-    },
-    emptyText: {
-        marginTop: 8
+        gap: 12
     },
     statsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
+        gap: 12
+    },
+    recentList: {
         gap: 10
     },
-    statItem: {
-        width: '47%',
-        minHeight: 74,
-        justifyContent: 'center',
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#e5e7eb'
+    workoutCard: {
+        backgroundColor: palette.surface
     },
-    statValue: {
-        fontSize: 22,
+    workoutTitle: {
+        color: palette.ink,
         fontWeight: '700'
+    },
+    workoutDescription: {
+        color: palette.muted
+    },
+    emptyCard: {
+        backgroundColor: palette.surfaceAlt
+    },
+    emptyContent: {
+        gap: 4
     }
 });

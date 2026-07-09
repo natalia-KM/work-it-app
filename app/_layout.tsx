@@ -1,5 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -13,7 +13,8 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations'
 import { ActivityIndicator } from 'react-native'
 import { seedDatabase } from '@/database/seeds/useSeedDatabase'
-import { DefaultTheme as PaperLightTheme, PaperProvider } from 'react-native-paper'
+import { PaperProvider } from 'react-native-paper'
+import { appTheme, navigationTheme } from '@/constants/theme'
 
 export {
     ErrorBoundary
@@ -76,9 +77,9 @@ function RootLayoutNav() {
                 options={{ enableChangeListener: true }}
                 useSuspense>
                 <QueryClientProvider client={queryClient}>
-                    <PaperProvider theme={PaperLightTheme}>
+                    <PaperProvider theme={appTheme}>
                         {/*<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>*/}
-                        <ThemeProvider value={DefaultTheme}>
+                        <ThemeProvider value={navigationTheme}>
                             <Stack>
                                 <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
                                 <Stack.Screen name="(exercises)" options={{ headerShown: false }}/>

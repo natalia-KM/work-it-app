@@ -1,7 +1,7 @@
-import { StyleSheet } from 'react-native'
-import { View } from '@/components/Themed'
+import { StyleSheet, View } from 'react-native'
 import { PropsWithChildren } from 'react'
 import { Text } from 'react-native-paper'
+import { palette } from '@/constants/theme'
 
 export const Table = ({ children }: PropsWithChildren) => {
     return (
@@ -48,7 +48,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        paddingHorizontal: 20
+        padding: 12,
+        borderRadius: 8,
+        backgroundColor: palette.surface,
+        gap: 8
     },
     row: {
         flexDirection: 'row',
@@ -64,7 +67,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     headerTitle: {
-        textAlign: 'center'
+        textAlign: 'center',
+        color: palette.muted,
+        fontWeight: '700'
     },
     denseRow: {
         flex: 0.5

@@ -1,30 +1,30 @@
 import { StyleSheet } from 'react-native';
+import { palette } from '@/constants/theme'
 
 export default StyleSheet.create({
     searchBar: {
-        width: '85%',
-        marginVertical: 20
+        width: '100%',
+        marginBottom: 14,
+        backgroundColor: palette.surface
+    },
+    searchInput: {
+        minHeight: 0
     },
     list: {
         flex: 1,
-        width: '85%'
+        width: '100%'
     },
     container: {
-        display: 'flex',
-        alignContent: 'center',
-        justifyContent: 'center',
-        paddingTop: 2
+        paddingBottom: 24,
+        gap: 12
     },
     itemContents: {
-        alignItems: 'center'
+        alignItems: 'center',
+        minHeight: 84
     },
     itemWrapper: {
-        width: '98%',
-        alignSelf: 'center',
-        marginBottom: 12,
-        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.16)',
-        paddingHorizontal: 4,
-        paddingVertical: 0
+        backgroundColor: palette.surface,
+        borderRadius: 8
     },
     imageWrapper: {
         maxWidth: '40%'
@@ -32,7 +32,9 @@ export default StyleSheet.create({
     image: {
         width: 64,
         height: 64,
-        marginRight: 8
+        marginRight: 10,
+        borderRadius: 8,
+        backgroundColor: palette.surfaceAlt
     },
     contentWrapper: {
         display: 'flex',
@@ -41,10 +43,24 @@ export default StyleSheet.create({
     },
     title: {
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: '800',
+        color: palette.ink
     },
     subtitle: {
         fontSize: 12,
-        color: '#666'
+        color: palette.muted
+    },
+    chips: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+        paddingTop: 4
+    },
+    chip: {
+        backgroundColor: palette.surfaceAlt
+    },
+    chipText: {
+        color: palette.primaryDark,
+        fontSize: 11
     }
 });

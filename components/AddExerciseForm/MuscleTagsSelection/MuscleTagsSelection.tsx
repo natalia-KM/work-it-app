@@ -1,11 +1,11 @@
 import { Controller, useFormContext } from "react-hook-form";
-import { View } from '@/components/Themed'
+import { StyleSheet, View } from 'react-native'
 import { Chip, HelperText, SegmentedButtons, Text } from 'react-native-paper'
 import { useState } from 'react'
 import { MuscleGroup } from '@/database/entities'
-import { StyleSheet } from 'react-native'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 import { useGetMuscleTags } from '@/hooks/tags/useGetMuscleTags'
+import { palette } from '@/constants/theme'
 
 const muscleGroupsArray = Object.values(MuscleGroup).map((muscleGroup) => ({
     value: muscleGroup.toLowerCase(),
@@ -34,7 +34,7 @@ export const MuscleTagsSelection = () => {
 
     return (
         <View style={styles.tagsSection}>
-            <Text variant={'titleMedium'}>Select muscles</Text>
+            <Text variant={'titleMedium'} style={styles.title}>Select muscles</Text>
             <SegmentedButtons
                 buttons={muscleGroupsArray}
                 value={selectedMuscleGroup}
@@ -61,6 +61,7 @@ export const MuscleTagsSelection = () => {
                                         key={tag.id}
                                         selected={isSelected}
                                         mode={isSelected ? 'flat' : 'outlined'}
+                                        style={isSelected ? styles.selectedChip : styles.chip}
                                         onPress={() => onChange(sorted)}
                                         disabled={!isCustom}
                                     >
@@ -82,9 +83,19 @@ const styles = StyleSheet.create({
     tagsSection: {
         gap: 12
     },
+    title: {
+        color: palette.ink,
+        fontWeight: '800'
+    },
     tagsContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 8
+    },
+    chip: {
+        backgroundColor: palette.surface
+    },
+    selectedChip: {
+        backgroundColor: palette.surfaceAlt
     }
 })

@@ -1,11 +1,11 @@
 import { Button, Card, Icon, IconButton, Text } from 'react-native-paper'
-import { View } from '@/components/Themed'
-import { Image, StyleSheet } from 'react-native'
+import { Image, StyleSheet, View } from 'react-native'
 import { useController } from 'react-hook-form'
 import { useState } from 'react'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
 import * as ImagePicker from 'expo-image-picker';
 import { getImageSource } from '@/components/utils/getImageSource'
+import { palette } from '@/constants/theme'
 
 export const ExerciseImageUpload = () => {
     const { field: { value, onChange } } = useController<AddExerciseFormValues>({ name: 'photo' })
@@ -56,14 +56,16 @@ export const ExerciseImageUpload = () => {
                         <Icon
                             source="cloud-arrow-up-outline"
                             size={48}
+                            color={palette.primary}
                         />
 
                         <View style={styles.cardText}>
-                            <Text>Upload Exercise Cover Image</Text>
+                            <Text variant="titleMedium" style={styles.title}>Upload exercise image</Text>
+                            <Text variant="bodySmall" style={styles.subtitle}>Use a photo to make the movement easier to recognize.</Text>
                         </View>
 
                         <Button icon={'tray-arrow-up'} mode={'contained'} onPress={pickMedia}>
-                            Select File
+                            Select file
                         </Button>
                     </>
                 )}
@@ -74,16 +76,18 @@ export const ExerciseImageUpload = () => {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: 'transparent'
+        backgroundColor: palette.surface
     },
     cardText: {
-        alignItems: 'center'
+        alignItems: 'center',
+        gap: 4
     },
     cardContent: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 8
+        gap: 10,
+        minHeight: 190
     },
     previewContainer: {
         position: 'relative'
@@ -91,12 +95,22 @@ const styles = StyleSheet.create({
     imagePreview: {
         width: 200,
         height: 200,
-        borderRadius: 12
+        borderRadius: 12,
+        backgroundColor: palette.surfaceAlt
     },
     removeButton: {
         position: 'absolute',
         top: -10,
         right: -10,
-        backgroundColor: 'white'
+        backgroundColor: palette.surface
+    },
+    title: {
+        color: palette.ink,
+        fontWeight: '800'
+    },
+    subtitle: {
+        maxWidth: 260,
+        color: palette.muted,
+        textAlign: 'center'
     }
 });

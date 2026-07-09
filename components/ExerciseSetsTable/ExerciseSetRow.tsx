@@ -3,6 +3,7 @@ import { Checkbox, Text, TextInput } from 'react-native-paper'
 import { StyleSheet } from 'react-native'
 import { useWorkoutProgressStore } from '@/store/useWorkoutProgressStore'
 import { ExerciseProgressLogDetails } from '@/store/types'
+import { palette } from '@/constants/theme'
 
 interface ExerciseSetRowProps {
     exerciseSet: ExerciseProgressLogDetails
@@ -28,12 +29,14 @@ export const ExerciseSetRow = ({ exerciseSet }: ExerciseSetRowProps) => {
     return (
         <TableRow>
             <TableRowItem dense={true}>
-                <Text variant={'titleSmall'}>Set {exerciseSet.set}</Text>
+                <Text variant={'titleSmall'} style={styles.setLabel}>Set {exerciseSet.set}</Text>
             </TableRowItem>
 
             <TableRowItem>
                 <TextInput
                     dense={true}
+                    mode="outlined"
+                    keyboardType="decimal-pad"
                     value={exerciseSet.weight?.toString() ?? '0'}
                     onChangeText={text => handleWeightChange(text)}
                     right={
@@ -50,6 +53,8 @@ export const ExerciseSetRow = ({ exerciseSet }: ExerciseSetRowProps) => {
             <TableRowItem>
                 <TextInput
                     dense={true}
+                    mode="outlined"
+                    keyboardType="numeric"
                     value={exerciseSet.reps.toString() ?? '0'}
                     onChangeText={text => handleRepsChange(text)}
                     right={
@@ -74,6 +79,10 @@ export const ExerciseSetRow = ({ exerciseSet }: ExerciseSetRowProps) => {
 }
 
 const styles = StyleSheet.create({
+    setLabel: {
+        color: palette.ink,
+        fontWeight: '800'
+    },
     icon: {
         marginRight: 0,
         paddingRight: 0

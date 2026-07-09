@@ -2,9 +2,9 @@ import React from 'react';
 import { Link, Tabs } from 'expo-router';
 import { Pressable } from 'react-native';
 
-import Colors from '@/constants/Colors';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { IconButton, IconButtonProps } from 'react-native-paper'
+import { palette } from '@/constants/theme'
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: IconButtonProps) {
@@ -17,7 +17,21 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: Colors['light'].tint,
+                tabBarActiveTintColor: palette.primary,
+                tabBarInactiveTintColor: palette.muted,
+                tabBarStyle: {
+                    backgroundColor: palette.surface,
+                    borderTopColor: palette.line,
+                    paddingTop: 6
+                },
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '600'
+                },
+                headerStyle: {
+                    backgroundColor: palette.surface
+                },
+                headerTintColor: palette.ink,
                 // Disable the static render of the header on web
                 // to prevent a hydration error in React Navigation v6.
                 headerShown: useClientOnlyValue(false, true)
@@ -26,7 +40,7 @@ export default function TabLayout() {
                 name="index"
                 options={{
                     title: 'Home',
-                    tabBarIcon: ({ color }) => <TabBarIcon icon="home-outline" iconColor={color}/>
+                    tabBarIcon: ({ color }) => <TabBarIcon icon="view-dashboard-outline" iconColor={color}/>
                 }}
             />
             <Tabs.Screen
@@ -35,7 +49,7 @@ export default function TabLayout() {
                     headerShown: false,
                     title: 'Workouts',
                     tabBarShowLabel: true,
-                    tabBarIcon: ({ color }) => <TabBarIcon icon="walk" iconColor={color}/>
+                    tabBarIcon: ({ color }) => <TabBarIcon icon="dumbbell" iconColor={color}/>
                 }}
             />
             <Tabs.Screen
@@ -58,6 +72,7 @@ export default function TabLayout() {
                                 {({ pressed }) => (
                                     <IconButton
                                         icon={'plus-circle'}
+                                        iconColor={palette.primary}
                                         size={25}
                                         style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                                     />

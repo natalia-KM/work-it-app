@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native'
+import { palette } from '@/constants/theme'
 
 export const styles = StyleSheet.create({
     container: {
-        display: 'flex',
         height: '100%',
         gap: 20
     },
@@ -12,5 +12,11 @@ export const styles = StyleSheet.create({
     },
     submitButton: {
         marginBottom: 10
+    },
+    submitContent: {
+        minHeight: 50
+    },
+    surface: {
+        backgroundColor: palette.surface
     }
 });

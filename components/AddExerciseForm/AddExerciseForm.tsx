@@ -45,7 +45,9 @@ export const AddExerciseForm = () => {
             </View>
             <Button
                 mode={'contained'}
+                icon="check"
                 style={styles.submitButton}
+                contentStyle={styles.submitContent}
                 onPress={handleSubmit(onSubmit)}
                 disabled={!isValid}
             >

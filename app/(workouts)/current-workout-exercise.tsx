@@ -1,13 +1,14 @@
 import { useGetRecentExerciseLogs } from '@/hooks/logs/useGetRecentExerciseLogs'
-import { Appbar, Button, Text, TextInput } from 'react-native-paper'
-import { View } from '@/components/Themed'
+import { Appbar, Button, Card, Chip, Text, TextInput } from 'react-native-paper'
+import { StyleSheet, View } from 'react-native'
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
 import { useWorkoutProgressStore } from '@/store'
 import { ExerciseSetsTable } from '@/components/ExerciseSetsTable/ExerciseSetsTable'
 import { ExerciseLog } from '@/database/entities'
 import { useRouter } from 'expo-router'
-import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { LoadingState, StateView } from '@/components/ui/Screen'
+import { palette } from '@/constants/theme'
 
 // TODO: maybe context for current and store for whole?
 export default function CurrentWorkoutExerciseScreen() {
@@ -62,22 +63,28 @@ export default function CurrentWorkoutExerciseScreen() {
     const router = useRouter()
 
     if (isLogLoading || isExerciseLoading) {
-        return <Text>Loading</Text>
+        return <LoadingState title="Loading exercise"/>
     }
 
     if (isLogError || isExerciseError) {
-        return <Text>Error ex: {exerciseError?.message}, error log: {logError?.message}</Text>
+        return (
+            <StateView
+                title="Could not load exercise"
+                description={exerciseError?.message ?? logError?.message ?? 'The selected exercise is unavailable.'}
+                icon="alert-circle-outline"
+            />
+        )
     }
 
     if (!exercise || !recentExerciseLogs) {
-        return <Text>Error 2</Text>
+        return <StateView title="Exercise unavailable" icon="alert-circle-outline"/>
     }
 
     const selectedExercise = exercise.find(item => item.id === exerciseId)
     const exerciseProgress = exerciseData.find(item => item.exerciseId === exerciseId)
 
     if (!selectedExercise) {
-        return <Text>Exercise unavailable</Text>
+        return <StateView title="Exercise unavailable" icon="alert-circle-outline"/>
     }
 
     const handleBack = () => {
@@ -123,14 +130,22 @@ export default function CurrentWorkoutExerciseScreen() {
             </Appbar.Header>
             <SafeAreaView style={styles.screen}>
                 <View style={styles.container}>
-                    <View>
-                        <Text variant={'titleMedium'}>{selectedExercise.title}</Text>
-                        {targetDescription && <Text>{targetDescription}</Text>}
+                    <Card mode="contained" style={styles.exerciseCard}>
+                        <Card.Content style={styles.exerciseCardContent}>
+                        <Text variant={'headlineSmall'} style={styles.exerciseTitle}>{selectedExercise.title}</Text>
+                        {targetDescription && (
+                            <View style={styles.metaRow}>
+                                {targetDescription.split(' | ').map((item) => (
+                                    <Chip key={item} compact style={styles.metaChip}>{item}</Chip>
+                                ))}
+                            </View>
+                        )}
                         {selectedExercise.instructions && (
                             <Text style={styles.instructions}>{selectedExercise.instructions}</Text>
                         )}
                         {selectedExercise.notes && <Text>{selectedExercise.notes}</Text>}
-                    </View>
+                        </Card.Content>
+                    </Card>
 
                     <TextInput
                         label="Session notes"
@@ -148,8 +163,8 @@ export default function CurrentWorkoutExerciseScreen() {
                         <Button mode={'outlined'} onPress={handleSkip}>
                             Skip
                         </Button>
-                        <Button mode={'contained'} onPress={handleComplete}>
-                            Complete Exercise
+                        <Button mode={'contained'} icon="check" onPress={handleComplete}>
+                            Complete
                         </Button>
                     </View>
                 </View>
@@ -161,28 +176,47 @@ export default function CurrentWorkoutExerciseScreen() {
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: palette.background,
         alignItems: 'stretch'
     },
     container: {
         flex: 1,
         paddingHorizontal: 20,
-        paddingVertical: 20
+        paddingVertical: 20,
+        gap: 16
     },
     exerciseDetailsContainer: {
         flex: 1
     },
+    exerciseCard: {
+        backgroundColor: palette.surface
+    },
+    exerciseCardContent: {
+        gap: 8
+    },
+    exerciseTitle: {
+        color: palette.ink,
+        fontWeight: '800'
+    },
+    metaRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6
+    },
+    metaChip: {
+        backgroundColor: palette.surfaceAlt
+    },
     instructions: {
-        marginTop: 8,
-        color: '#374151'
+        color: palette.muted,
+        lineHeight: 20
     },
     notesInput: {
-        marginTop: 16,
-        backgroundColor: 'white'
+        backgroundColor: palette.surface
     },
     actions: {
         flexDirection: 'row',
         gap: 12,
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        alignItems: 'center'
     }
 })
