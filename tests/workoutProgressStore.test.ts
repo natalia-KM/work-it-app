@@ -37,6 +37,70 @@ describe('workout progress store', () => {
         expect(exercise.details).toEqual([{ set: 1, reps: 8, weight: 40, isCompleted: true }])
     })
 
+    it('confirms current exercise edits without marking it completed', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([{ exerciseId: 3, details: [], restTime: 0 }])
+        store.setCurrentExerciseId(3)
+        store.addSet(10, 25)
+        store.confirmCurrentExercise()
+
+        const exercise = useWorkoutProgressStore.getState().exerciseData[0]
+
+        expect(exercise.completed).toBeUndefined()
+        expect(exercise.details).toEqual([{ set: 1, reps: 10, weight: 25, isCompleted: false }])
+    })
+
+    it('tracks skipped exercises and counts them as session data', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([{ exerciseId: 3, details: [], restTime: 0, isOptional: true }])
+        store.setCurrentExerciseId(3)
+        store.skipCurrentExercise()
+
+        const state = useWorkoutProgressStore.getState()
+
+        expect(state.exerciseData[0].skipped).toBe(true)
+        expect(state.exerciseData[0].completed).toBe(false)
+        expect(state.hasSessionData()).toBe(true)
+    })
+
+    it('updates notes for the selected exercise only', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([
+            { exerciseId: 3, details: [], restTime: 0 },
+            { exerciseId: 4, details: [], restTime: 0, notes: 'Keep elbows tucked' }
+        ])
+        store.setCurrentExerciseId(3)
+        store.setCurrentExerciseNotes('Seat at 4')
+
+        const state = useWorkoutProgressStore.getState()
+
+        expect(state.exerciseData[0].notes).toBe('Seat at 4')
+        expect(state.exerciseData[1].notes).toBe('Keep elbows tucked')
+    })
+
+    it('reuses saved exercise details when revisiting an exercise', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([{
+            exerciseId: 3,
+            details: [{ set: 1, reps: 8, weight: 40, isCompleted: true }],
+            restTime: 0
+        }])
+        store.setCurrentExerciseId(3)
+        store.setCurrentExerciseDetails([{ set: 1, reps: 0, weight: 0 }])
+
+        expect(useWorkoutProgressStore.getState().currentExerciseDetails).toEqual([
+            { set: 1, reps: 8, weight: 40, isCompleted: true }
+        ])
+    })
+
     it('resets all session data after cancel or finish', () => {
         const store = useWorkoutProgressStore.getState()
 

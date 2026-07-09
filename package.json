@@ -11,6 +11,7 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "drizzle:generate": "npx drizzle-kit generate",
     "drizzle:push": "npx drizzle-kit push",
     "drizzle:status": "npx drizzle-kit status"
@@ -56,6 +57,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "drizzle-kit": "^0.31.5",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~10.0.0",

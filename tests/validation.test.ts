@@ -32,6 +32,22 @@ describe('exercise validation', () => {
         expect(result.success).toBe(false)
     })
 
+    it('rejects invalid exercise titles and too many muscle tags', () => {
+        const schema = exerciseFormSchema({ exercises: [] })
+
+        expect(schema.safeParse({
+            title: 'Bad <script>',
+            muscleTags: [],
+            isCustom: true
+        }).success).toBe(false)
+
+        expect(schema.safeParse({
+            title: 'Cable Row',
+            muscleTags: [1, 2, 3, 4],
+            isCustom: true
+        }).success).toBe(false)
+    })
+
     it('allows the current title while editing an exercise', () => {
         const schema = exerciseFormSchema({
             exercises: [{ id: 1, title: 'Squat', isCustom: false }],
@@ -49,6 +65,18 @@ describe('exercise validation', () => {
 })
 
 describe('workout validation', () => {
+    it('accepts a valid workout with notes and color', () => {
+        const schema = workoutFormSchema({ workouts: [] })
+
+        const result = schema.safeParse({
+            title: 'Upper Body',
+            notes: 'Pull, push, shoulders',
+            color: '#ffffff'
+        })
+
+        expect(result.success).toBe(true)
+    })
+
     it('rejects duplicate workout titles case-insensitively', () => {
         const schema = workoutFormSchema({
             workouts: [{
@@ -62,6 +90,38 @@ describe('workout validation', () => {
         const result = schema.safeParse({
             title: 'leg day',
             notes: 'duplicate',
+            color: '#ffffff'
+        })
+
+        expect(result.success).toBe(false)
+    })
+
+    it('allows the current workout title while editing', () => {
+        const schema = workoutFormSchema({
+            workouts: [{
+                id: 1,
+                title: 'Leg Day',
+                lastWorkout: null,
+                createdAt: new Date()
+            }],
+            initialTitle: 'Leg Day'
+        })
+
+        const result = schema.safeParse({
+            title: 'Leg Day',
+            notes: '',
+            color: '#ffffff'
+        })
+
+        expect(result.success).toBe(true)
+    })
+
+    it('rejects overlong workout notes', () => {
+        const schema = workoutFormSchema({ workouts: [] })
+
+        const result = schema.safeParse({
+            title: 'Leg Day',
+            notes: 'x'.repeat(256),
             color: '#ffffff'
         })
 
