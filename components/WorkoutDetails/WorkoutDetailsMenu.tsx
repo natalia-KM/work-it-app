@@ -36,8 +36,6 @@ export const WorkoutDetailsMenu = ({ workoutId }: WorkoutDetailsMenuProps) => {
             onDismiss={onClose}
         >
             <Menu.Item onPress={handleAddExercises} title="Add Exercises"/>
-            <Menu.Item title="Edit"/>
-            <Menu.Item title="Delete"/>
         </Menu>
     )
 }

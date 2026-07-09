@@ -13,6 +13,12 @@ interface WorkoutExercisesProps {
     workoutId: number
 }
 
+const formatDate = (date?: Date | null) => {
+    if (!date) return 'Not completed'
+
+    return date.toLocaleDateString()
+}
+
 export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
     const { data: exercises, isError: isExerciseError } = useGetWorkoutExercises({ workoutId })
 
@@ -45,8 +51,10 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
                         containerStyle={styles.accordionWrapper}
                         left={props => <Image {...props} source={getImageSource(exercise.photo)} style={styles.image}/>}
                     >
-                        <View>
-                            <Text>Item 1</Text>
+                        <View style={styles.exerciseSummary}>
+                            <Text>Last completed: {formatDate(exercise.lastCompleted)}</Text>
+                            <Text>Best set: {exercise.bestAchieved ?? 'Not recorded'}</Text>
+                            {exercise.notes ? <Text>Notes: {exercise.notes}</Text> : null}
                         </View>
                     </List.Accordion>
                 ))}
@@ -99,6 +107,11 @@ const styles = StyleSheet.create({
         height: 48,
         marginRight: 6,
         marginLeft: 4
+    },
+    exerciseSummary: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        gap: 4
     },
     addButton: {
         marginBottom: 10
