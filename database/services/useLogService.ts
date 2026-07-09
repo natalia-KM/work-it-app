@@ -4,20 +4,8 @@ import * as schema from '@/database/schema'
 import { WorkoutExerciseTable, WorkoutLogExerciseTable, WorkoutLogTable, WorkoutTable } from '@/database/schema'
 import { and, desc, eq } from 'drizzle-orm'
 import { ExerciseLog } from '@/database/entities'
-import { ExerciseProgressLog, ExerciseProgressLogDetails, WorkoutProgressSession } from '@/store/types'
-
-const getPersistableSets = (details: ExerciseProgressLogDetails[]) => {
-    return details
-        .filter((detail) => detail.isCompleted || detail.reps > 0 || detail.weight > 0)
-        .map(({ set, reps, weight }) => ({ set, reps, weight }))
-}
-
-const getBestAchieved = (exercise: ExerciseProgressLog) => {
-    const persistableSets = getPersistableSets(exercise.details)
-    if (persistableSets.length === 0) return undefined
-
-    return Math.max(...persistableSets.map((set) => Math.max(set.weight * set.reps, set.reps)))
-}
+import { WorkoutProgressSession } from '@/store/types'
+import { getBestAchieved, getPersistableSets } from '@/database/services/logSessionMapper'
 
 export const useLogService = () => {
     const db = useSQLiteContext();

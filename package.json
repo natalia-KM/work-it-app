@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "drizzle:generate": "npx drizzle-kit generate",
     "drizzle:push": "npx drizzle-kit push",
     "drizzle:status": "npx drizzle-kit status"
@@ -52,7 +53,8 @@
     "eslint": "^9.0.0",
     "eslint-config-expo": "~10.0.0",
     "react-test-renderer": "19.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^4.1.10"
   },
   "private": true
 }
