@@ -24,7 +24,7 @@ export default function EditExercise() {
                 router.navigate('/exercises')
             })
             .catch((error) => {
-                alert('Error deleting an exercise')
+                alert(error instanceof Error ? error.message : 'Error deleting an exercise')
                 console.error(error)
             })
     }

@@ -1,11 +1,11 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { View } from '@/components/Themed'
 import { Chip, HelperText, SegmentedButtons, Text } from 'react-native-paper'
-import { predefinedMuscleTags } from '@/database/seeds/predefinedExercises'
 import { useState } from 'react'
 import { MuscleGroup } from '@/database/entities'
 import { StyleSheet } from 'react-native'
 import { AddExerciseFormValues } from '@/components/AddExerciseForm/AddExerciseValidationSchema'
+import { useGetMuscleTags } from '@/hooks/tags/useGetMuscleTags'
 
 const muscleGroupsArray = Object.values(MuscleGroup).map((muscleGroup) => ({
     value: muscleGroup.toLowerCase(),
@@ -16,12 +16,21 @@ export const MuscleTagsSelection = () => {
     const { control, formState: { errors }, getValues } = useFormContext<AddExerciseFormValues>();
     const currentTags = getValues("muscleTags") || [];
     const isCustom = getValues('isCustom')
+    const { data: muscleTags = [], isLoading, isError } = useGetMuscleTags()
 
     const firstGroup =
-        predefinedMuscleTags.find((tag) => tag.id === currentTags[0])?.muscleGroup ??
+        muscleTags.find((tag) => tag.id === currentTags[0])?.muscleGroup ??
         MuscleGroup.UpperBody;
 
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState(firstGroup.toLowerCase())
+
+    if (isLoading) {
+        return <Text>Loading muscles...</Text>
+    }
+
+    if (isError) {
+        return <Text>Could not load muscles</Text>
+    }
 
     return (
         <View style={styles.tagsSection}>
@@ -37,7 +46,7 @@ export const MuscleTagsSelection = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => (
                     <View style={styles.tagsContainer}>
-                        {predefinedMuscleTags.filter(tag => tag.muscleGroup.toLowerCase() === selectedMuscleGroup)
+                        {muscleTags.filter(tag => tag.muscleGroup.toLowerCase() === selectedMuscleGroup)
                             .map((tag) => {
                                 const isSelected = value.some((t: number) => t === tag.id)
 

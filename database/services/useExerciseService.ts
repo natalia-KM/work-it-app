@@ -1,5 +1,11 @@
 import * as schema from "@/database/schema";
-import { ExerciseMuscleTagsTable, ExerciseTable, MuscleTagsTable } from "@/database/schema";
+import {
+    ExerciseMuscleTagsTable,
+    ExerciseTable,
+    MuscleTagsTable,
+    WorkoutExerciseTable,
+    WorkoutLogExerciseTable
+} from "@/database/schema";
 import { useSQLiteContext } from 'expo-sqlite'
 import { drizzle } from 'drizzle-orm/expo-sqlite'
 import { Exercise, ExerciseDetails, MuscleGroup, MuscleTag } from '@/database/entities'
@@ -64,6 +70,24 @@ export const useExercisesService = () => {
     };
 
     const deleteExercise = async (exerciseId: number) => {
+        const [workoutLinks, logLinks] = await Promise.all([
+            drizzleDb
+                .select({ id: WorkoutExerciseTable.id })
+                .from(WorkoutExerciseTable)
+                .where(eq(WorkoutExerciseTable.exerciseId, exerciseId))
+                .limit(1),
+            drizzleDb
+                .select({ id: WorkoutLogExerciseTable.id })
+                .from(WorkoutLogExerciseTable)
+                .where(eq(WorkoutLogExerciseTable.exerciseId, exerciseId))
+                .limit(1)
+        ])
+
+        if (workoutLinks.length > 0 || logLinks.length > 0) {
+            throw new Error('This exercise is already used in workouts or logs and cannot be deleted.')
+        }
+
+        await drizzleDb.delete(ExerciseMuscleTagsTable).where(eq(ExerciseMuscleTagsTable.exerciseId, exerciseId));
         await drizzleDb.delete(ExerciseTable).where(eq(ExerciseTable.id, exerciseId));
     };
 

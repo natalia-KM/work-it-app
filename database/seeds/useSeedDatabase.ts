@@ -60,7 +60,25 @@ export const seedDatabase = async (drizzleDb: ExpoSQLiteDatabase) => {
     try {
         await seedIfEmpty(drizzleDb, ExerciseTable, predefinedExercises, "title");
         await seedIfEmpty(drizzleDb, MuscleTagsTable, predefinedMuscleTags, "name");
-        await seedRelationshipIfEmpty(drizzleDb, ExerciseMuscleTagsTable, predefinedExerciseMuscleTags, (row) => `${row.exerciseId}_${row.tabId}`)
+
+        const [exercises, muscleTags] = await Promise.all([
+            drizzleDb.select().from(ExerciseTable),
+            drizzleDb.select().from(MuscleTagsTable)
+        ])
+        const exerciseIdsByTitle = new Map(exercises.map((exercise) => [exercise.title, exercise.id]))
+        const tagIdsByName = new Map(muscleTags.map((tag) => [tag.name, tag.id]))
+        const exerciseMuscleTags = predefinedExerciseMuscleTags
+            .map(({ exerciseTitle, tagName }) => {
+                const exerciseId = exerciseIdsByTitle.get(exerciseTitle)
+                const tabId = tagIdsByName.get(tagName)
+
+                if (!exerciseId || !tabId) return undefined
+
+                return { exerciseId, tabId }
+            })
+            .filter((row): row is { exerciseId: number; tabId: number } => Boolean(row))
+
+        await seedRelationshipIfEmpty(drizzleDb, ExerciseMuscleTagsTable, exerciseMuscleTags, (row) => `${row.exerciseId}_${row.tabId}`)
     } catch (e) {
         console.error('Error seeding the database: ', e)
     }
