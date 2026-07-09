@@ -22,7 +22,7 @@ export const useGetWorkoutExercises = ({
         return result
     }
     return useQuery({
-        queryKey: ['workout-exercises'],
+        queryKey: ['workout-exercises', workoutId],
         queryFn: getWorkoutExercises,
         refetchOnMount: 'always'
     })

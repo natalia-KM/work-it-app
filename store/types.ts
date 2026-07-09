@@ -12,3 +12,9 @@ export interface ExerciseProgressLog {
     bestAchieved?: number
     completed?: boolean
 }
+
+export interface WorkoutProgressSession {
+    workoutId: number
+    startedAt: Date
+    exercises: ExerciseProgressLog[]
+}

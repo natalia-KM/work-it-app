@@ -47,8 +47,9 @@ export const useWorkoutService = () => {
                 photo: schema.ExerciseTable.photo,
                 notes: schema.WorkoutExerciseTable.notes,
                 isCustom: schema.ExerciseTable.isCustom,
-                // bestAchieved: schema.WorkoutLogExerciseTable.bestAchieved,
-                isArchived: schema.WorkoutExerciseTable.isArchived
+                bestAchieved: schema.WorkoutExerciseTable.bestAchieved,
+                isArchived: schema.WorkoutExerciseTable.isArchived,
+                lastCompleted: schema.WorkoutExerciseTable.lastCompleted
             })
             .from(schema.WorkoutExerciseTable)
             .innerJoin(
@@ -61,7 +62,9 @@ export const useWorkoutService = () => {
             ...exercise,
             isArchived: exercise.isArchived === 1,
             isCustom: exercise.isCustom === 1,
-            notes: exercise.notes ?? undefined
+            notes: exercise.notes ?? undefined,
+            bestAchieved: exercise.bestAchieved,
+            lastCompleted: exercise.lastCompleted
         }))
     };
 

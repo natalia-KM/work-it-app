@@ -16,7 +16,7 @@ interface WorkoutExercisesProps {
 export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
     const { data: exercises, isError: isExerciseError } = useGetWorkoutExercises({ workoutId })
 
-    const { setWorkoutDetails } = useWorkoutProgressStore()
+    const { resetSession, setWorkoutDetails } = useWorkoutProgressStore()
     const router = useRouter()
 
     if (isExerciseError || !exercises) {
@@ -52,6 +52,7 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
                 ))}
             </View>
             <Button onPress={() => {
+                resetSession()
                 setWorkoutDetails(workoutId)
                 router.navigate({
                     pathname: '/(workouts)/current-workout-main'

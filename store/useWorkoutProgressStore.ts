@@ -1,16 +1,21 @@
 import { create } from 'zustand/react'
-import { ExerciseProgressLog, ExerciseProgressLogDetails } from '@/store/types'
+import { ExerciseProgressLog, ExerciseProgressLogDetails, WorkoutProgressSession } from '@/store/types'
 
 interface WorkoutProgressStore {
     workoutId?: number
     workoutTitle?: string
+    startedAt?: Date
     setWorkoutDetails: (workoutId?: number, workoutTitle?: string) => void
 
     exerciseData: ExerciseProgressLog[]
     setExerciseData: (exerciseData: ExerciseProgressLog[]) => void
+    getSession: () => WorkoutProgressSession | undefined
+    resetSession: () => void
 
     confirmCurrentExercise: () => void
+    completeCurrentExercise: () => void
     getExerciseDetails: (exerciseId?: number) => ExerciseProgressLogDetails[]
+    hasSessionData: () => boolean
 
     currentExerciseId?: number
     setCurrentExerciseId: (exerciseId: number) => void
@@ -26,13 +31,42 @@ interface WorkoutProgressStore {
 export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get) => ({
     workoutId: undefined,
     workoutTitle: undefined,
-    setWorkoutDetails: (workoutId, workoutTitle) => set({ workoutId, workoutTitle }),
+    startedAt: undefined,
+    setWorkoutDetails: (workoutId, workoutTitle) => set((state) => ({
+        workoutId,
+        workoutTitle: workoutTitle ?? state.workoutTitle,
+        startedAt: state.startedAt ?? new Date()
+    })),
 
     currentExerciseId: undefined,
-    setCurrentExerciseId: (exerciseId) => set({ currentExerciseId: exerciseId }),
+    setCurrentExerciseId: (exerciseId) => set({
+        currentExerciseId: exerciseId,
+        currentExerciseDetails: []
+    }),
 
     exerciseData: [],
     setExerciseData: (exerciseData) => set({ exerciseData }),
+
+    getSession: () => {
+        const { workoutId, startedAt, exerciseData } = get()
+
+        if (!workoutId || !startedAt) return undefined
+
+        return {
+            workoutId,
+            startedAt,
+            exercises: exerciseData
+        }
+    },
+
+    resetSession: () => set({
+        workoutId: undefined,
+        workoutTitle: undefined,
+        startedAt: undefined,
+        exerciseData: [],
+        currentExerciseId: undefined,
+        currentExerciseDetails: []
+    }),
 
     confirmCurrentExercise: () => set((state) => ({
         exerciseData: state.exerciseData.map((exercise) => {
@@ -42,9 +76,27 @@ export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get)
         })
     })),
 
+    completeCurrentExercise: () => set((state) => ({
+        exerciseData: state.exerciseData.map((exercise) => {
+            if (exercise.exerciseId !== state.currentExerciseId) return exercise
+
+            return {
+                ...exercise,
+                completed: true,
+                details: state.currentExerciseDetails
+            }
+        })
+    })),
+
     getExerciseDetails: (exerciseId) => {
         const exercise = get().exerciseData.find(ex => ex.exerciseId === exerciseId)
         return exercise?.details ?? []
+    },
+
+    hasSessionData: () => {
+        const { exerciseData, currentExerciseDetails } = get()
+        return exerciseData.some(exercise => exercise.details.length > 0 || exercise.completed)
+            || currentExerciseDetails.length > 0
     },
 
     currentExerciseDetails: [],

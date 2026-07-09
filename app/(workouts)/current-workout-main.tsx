@@ -3,11 +3,12 @@ import { useRouter } from 'expo-router'
 import { Appbar, Button, List } from 'react-native-paper'
 import { useGetWorkout } from '@/hooks/workouts/useGetWorkout'
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
-import { FlatList, Image, StyleSheet } from 'react-native'
+import { Alert, FlatList, Image, StyleSheet } from 'react-native'
 import { ExerciseWorkoutDetails } from '@/database/entities'
 import { getImageSource } from '@/components/utils/getImageSource'
 import { ExerciseProgressLog, useWorkoutProgressStore } from '@/store'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useFinishWorkout } from '@/hooks/logs/useFinishWorkout'
 
 export default function CurrentWorkoutMainScreen() {
     const {
@@ -15,14 +16,17 @@ export default function CurrentWorkoutMainScreen() {
         setWorkoutDetails,
         setCurrentExerciseId,
         exerciseData,
-        setExerciseData
+        setExerciseData,
+        getSession,
+        resetSession,
+        hasSessionData
     } = useWorkoutProgressStore()
+    const finishWorkout = useFinishWorkout()
 
     const { data: workout, isError } = useGetWorkout({
         workoutId,
         refetchOnMount: 'always',
         onSuccess: (workout) => {
-            console.log('setWorkoutDetails: ', workout)
             setWorkoutDetails(workout?.id, workout?.title)
         }
     })
@@ -52,8 +56,46 @@ export default function CurrentWorkoutMainScreen() {
     const onExercisePress = (itemId: number) => {
         setCurrentExerciseId(itemId)
         router.replace({
-            pathname: '/current-workout-exercise'
+            pathname: '/(workouts)/current-workout-exercise'
         })
+    }
+
+    const cancelWorkout = () => {
+        resetSession()
+        router.replace('/(tabs)/workouts')
+    }
+
+    const handleCancel = () => {
+        if (!hasSessionData()) {
+            cancelWorkout()
+            return
+        }
+
+        Alert.alert(
+            'Discard workout?',
+            'Entered sets will be lost.',
+            [
+                { text: 'Keep Going', style: 'cancel' },
+                { text: 'Discard', style: 'destructive', onPress: cancelWorkout }
+            ]
+        )
+    }
+
+    const handleFinishWorkout = async () => {
+        const session = getSession()
+
+        if (!session) {
+            Alert.alert('Workout unavailable', 'Start the workout again before saving.')
+            return
+        }
+
+        try {
+            await finishWorkout.mutateAsync(session)
+            resetSession()
+            router.replace('/(tabs)/workouts')
+        } catch {
+            Alert.alert('Could not finish workout', 'Please try again.')
+        }
     }
 
     const description = (lastCompleted?: Date | null) => {
@@ -66,9 +108,9 @@ export default function CurrentWorkoutMainScreen() {
     return (
         <>
             <Appbar.Header>
-                <Appbar.BackAction onPress={() => {
-                }}/>
+                <Appbar.BackAction onPress={handleCancel}/>
                 <Appbar.Content title={workout.title}/>
+                <Appbar.Action icon="close" onPress={handleCancel}/>
             </Appbar.Header>
             <SafeAreaView style={styles.screen}>
                 <View style={styles.screenContainer}>
@@ -89,11 +131,13 @@ export default function CurrentWorkoutMainScreen() {
                             />
                         )}
                     />
-                    <Button onPress={() => {
-                        console.log('Current Data: ')
-                        console.log(exerciseData)
-                    }}>
-                        Temp check btn
+                    <Button
+                        mode="contained"
+                        loading={finishWorkout.isPending}
+                        disabled={finishWorkout.isPending}
+                        onPress={handleFinishWorkout}
+                    >
+                        Finish Workout
                     </Button>
                 </View>
             </SafeAreaView>

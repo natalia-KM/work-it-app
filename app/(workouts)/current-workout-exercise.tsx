@@ -12,13 +12,13 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 // TODO: maybe context for current and store for whole?
 export default function CurrentWorkoutExerciseScreen() {
     const {
-        exerciseData,
         workoutId,
         currentExerciseId: exerciseId,
         workoutTitle,
         getExerciseDetails,
         setCurrentExerciseDetails,
         confirmCurrentExercise,
+        completeCurrentExercise,
         addSet
     } = useWorkoutProgressStore()
 
@@ -27,23 +27,20 @@ export default function CurrentWorkoutExerciseScreen() {
         data: exercise,
         isLoading: isExerciseLoading,
         isError: isExerciseError,
-        error: error1
+        error: exerciseError
     } = useGetWorkoutExercises({ workoutId })
 
     const {
         data: recentExerciseLogs,
         isLoading: isLogLoading,
         isError: isLogError,
-        error: error2
+        error: logError
     } = useGetRecentExerciseLogs({
         workoutId,
         exerciseId,
         refetchOnMount: 'always',
         onSuccess: (log: ExerciseLog[]) => {
-            console.log('ex data: ', exerciseData)
-            console.log('current exercise id: ', exerciseId)
             const details = getExerciseDetails(exerciseId)
-            console.log('details:', details)
 
             if (details.length > 0) {
                 setCurrentExerciseDetails(details)
@@ -66,18 +63,33 @@ export default function CurrentWorkoutExerciseScreen() {
     }
 
     if (isLogError || isExerciseError) {
-        return <Text>Error ex: {error1?.message}, error log: {error2?.message}</Text>
+        return <Text>Error ex: {exerciseError?.message}, error log: {logError?.message}</Text>
     }
 
     if (!exercise || !recentExerciseLogs) {
         return <Text>Error 2</Text>
     }
 
-    const handleComplete = () => {
+    const selectedExercise = exercise.find(item => item.id === exerciseId)
+
+    if (!selectedExercise) {
+        return <Text>Exercise unavailable</Text>
+    }
+
+    const handleBack = () => {
         confirmCurrentExercise()
 
         router.replace({
-            pathname: '/current-workout-main',
+            pathname: '/(workouts)/current-workout-main',
+            params: { workoutId }
+        })
+    }
+
+    const handleComplete = () => {
+        completeCurrentExercise()
+
+        router.replace({
+            pathname: '/(workouts)/current-workout-main',
             params: { workoutId }
         })
     }
@@ -85,14 +97,14 @@ export default function CurrentWorkoutExerciseScreen() {
     return (
         <>
             <Appbar.Header>
-                <Appbar.BackAction onPress={handleComplete}/>
+                <Appbar.BackAction onPress={handleBack}/>
                 <Appbar.Content title={workoutTitle}/>
             </Appbar.Header>
             <SafeAreaView style={styles.screen}>
                 <View style={styles.container}>
                     <View>
-                        <Text variant={'titleMedium'}>{exercise[0].title}</Text>
-                        <Text>{exercise[0].notes}</Text>
+                        <Text variant={'titleMedium'}>{selectedExercise.title}</Text>
+                        <Text>{selectedExercise.notes}</Text>
                     </View>
 
                     <View style={styles.exerciseDetailsContainer}>
