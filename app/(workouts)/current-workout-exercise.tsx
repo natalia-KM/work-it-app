@@ -9,9 +9,12 @@ import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { LoadingState, StateView } from '@/components/ui/Screen'
 import { palette } from '@/constants/theme'
+import { useState } from 'react'
+import { ExerciseHistoryModal } from '@/components/WorkoutExerciseHistory/ExerciseHistoryModal'
 
 // TODO: maybe context for current and store for whole?
 export default function CurrentWorkoutExerciseScreen() {
+    const [isHistoryVisible, setIsHistoryVisible] = useState(false)
     const {
         workoutId,
         currentExerciseId: exerciseId,
@@ -127,6 +130,7 @@ export default function CurrentWorkoutExerciseScreen() {
             <Appbar.Header>
                 <Appbar.BackAction onPress={handleBack}/>
                 <Appbar.Content title={workoutTitle}/>
+                <Appbar.Action icon="history" onPress={() => setIsHistoryVisible(true)}/>
             </Appbar.Header>
             <SafeAreaView style={styles.screen}>
                 <View style={styles.container}>
@@ -169,6 +173,13 @@ export default function CurrentWorkoutExerciseScreen() {
                     </View>
                 </View>
             </SafeAreaView>
+            <ExerciseHistoryModal
+                visible={isHistoryVisible}
+                onDismiss={() => setIsHistoryVisible(false)}
+                exerciseId={exerciseId}
+                workoutId={workoutId}
+                exerciseTitle={selectedExercise.title}
+            />
         </>
     )
 }

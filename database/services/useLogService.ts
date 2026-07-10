@@ -14,6 +14,7 @@ import { WorkoutProgressSession } from '@/store/types'
 import { getBestAchieved, getPersistableSets } from '@/database/services/logSessionMapper'
 import { buildWorkoutStats, WorkoutStats } from '@/database/stats'
 import { buildCompletedWorkoutHistory, buildCompletedWorkoutSession } from '@/database/logHistory'
+import { buildExerciseHistory, ExerciseHistoryItem } from '@/database/exerciseHistory'
 
 export const useLogService = () => {
     const db = useSQLiteContext();
@@ -48,6 +49,54 @@ export const useLogService = () => {
             )
             .orderBy(desc(WorkoutLogTable.date))
             .limit(limit);
+    }
+
+    const getExerciseHistory = async ({
+        exerciseId,
+        workoutId,
+        limit,
+        offset
+    }: {
+        exerciseId: number
+        workoutId?: number
+        limit: number
+        offset: number
+    }): Promise<ExerciseHistoryItem[]> => {
+        const rows = await drizzleDb
+            .select({
+                workoutLogId: WorkoutLogTable.id,
+                workoutId: WorkoutLogTable.workoutId,
+                workoutTitle: WorkoutTable.title,
+                date: WorkoutLogTable.date,
+                duration: WorkoutLogTable.duration,
+                exerciseLogId: WorkoutLogExerciseTable.id,
+                details: WorkoutLogExerciseTable.details,
+                notes: WorkoutLogExerciseTable.notes,
+                restTime: WorkoutLogExerciseTable.restTime,
+                bestAchieved: WorkoutLogExerciseTable.bestAchieved
+            })
+            .from(WorkoutLogExerciseTable)
+            .innerJoin(
+                WorkoutLogTable,
+                eq(WorkoutLogExerciseTable.workoutLogId, WorkoutLogTable.id)
+            )
+            .innerJoin(
+                WorkoutTable,
+                eq(WorkoutLogTable.workoutId, WorkoutTable.id)
+            )
+            .where(
+                workoutId
+                    ? and(
+                        eq(WorkoutLogTable.workoutId, workoutId),
+                        eq(WorkoutLogExerciseTable.exerciseId, exerciseId)
+                    )
+                    : eq(WorkoutLogExerciseTable.exerciseId, exerciseId)
+            )
+            .orderBy(desc(WorkoutLogTable.date), desc(WorkoutLogTable.id))
+            .limit(limit)
+            .offset(offset)
+
+        return buildExerciseHistory(rows)
     }
 
     const saveWorkoutSession = async (session: WorkoutProgressSession) => {
@@ -205,6 +254,7 @@ export const useLogService = () => {
 
     return {
         getRecentExerciseLogs,
+        getExerciseHistory,
         saveWorkoutSession,
         getWorkoutStats,
         getCompletedWorkoutHistory,
