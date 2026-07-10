@@ -67,8 +67,17 @@ interface SessionAccumulator {
 }
 
 const dayMs = 24 * 60 * 60 * 1000
+const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate())
+
+const asDate = (value: Date | null | number | string) => {
+    if (!value) return null
+
+    const date = value instanceof Date ? value : new Date(value)
+
+    return Number.isNaN(date.getTime()) ? null : date
+}
 
 const getDateKey = (date: Date) => {
     const year = date.getFullYear()
@@ -78,7 +87,7 @@ const getDateKey = (date: Date) => {
     return `${year}-${month}-${day}`
 }
 
-const getDayLabel = (date: Date) => date.toLocaleDateString(undefined, { weekday: 'short' })
+const getDayLabel = (date: Date) => weekdayLabels[date.getDay()]
 
 const getStartOfWeek = (date: Date) => {
     const day = date.getDay()
@@ -161,10 +170,16 @@ export const buildWorkoutStats = (
     }
 
     rows.forEach((row) => {
-        const date = row.date ? startOfDay(row.date) : null
+        const rowDate = asDate(row.date)
+        const date = rowDate ? startOfDay(rowDate) : null
         const dateKey = date ? getDateKey(date) : undefined
-        const sets = row.details ?? []
-        const rowVolume = sets.reduce((sum, set) => sum + (set.weight * set.reps), 0)
+        const sets = Array.isArray(row.details) ? row.details : []
+        const rowVolume = sets.reduce((sum, set) => {
+            const weight = Number.isFinite(set.weight) ? set.weight : 0
+            const reps = Number.isFinite(set.reps) ? set.reps : 0
+
+            return sum + (weight * reps)
+        }, 0)
         const workoutTitle = row.workoutTitle ?? 'Workout'
         const exerciseTitle = row.exerciseTitle ?? 'Exercise'
 
@@ -173,7 +188,7 @@ export const buildWorkoutStats = (
             session = {
                 workoutLogId: row.workoutLogId,
                 workoutTitle,
-                date: row.date,
+                date: rowDate,
                 duration: row.duration,
                 volume: 0,
                 sets: 0
@@ -184,8 +199,8 @@ export const buildWorkoutStats = (
         session.volume += rowVolume
         session.sets += sets.length
 
-        if (row.date && (!lastWorkoutDate || row.date > lastWorkoutDate)) {
-            lastWorkoutDate = row.date
+        if (rowDate && (!lastWorkoutDate || rowDate > lastWorkoutDate)) {
+            lastWorkoutDate = rowDate
         }
 
         if (dateKey) {
@@ -213,7 +228,7 @@ export const buildWorkoutStats = (
         totalVolume += rowVolume
 
         sets.forEach((set) => {
-            heaviestWeight = Math.max(heaviestWeight, set.weight)
+            heaviestWeight = Math.max(heaviestWeight, Number.isFinite(set.weight) ? set.weight : 0)
         })
 
         if (date) {

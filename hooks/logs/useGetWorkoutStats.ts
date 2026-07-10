@@ -6,7 +6,8 @@ export const useGetWorkoutStats = () => {
 
     return useQuery({
         queryKey: ['workout-stats'],
-        queryFn: getWorkoutStats
+        queryFn: getWorkoutStats,
+        retry: false
     })
 }
 
