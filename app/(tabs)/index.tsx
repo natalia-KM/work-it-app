@@ -125,7 +125,7 @@ const AnimatedProgressBar = ({ ratio, color }: AnimatedProgressBarProps) => {
             toValue: boundedRatio,
             duration: 740,
             easing: Easing.out(Easing.cubic),
-            useNativeDriver: false
+            useNativeDriver: true
         }).start()
     }, [boundedRatio, progress])
 
@@ -136,10 +136,7 @@ const AnimatedProgressBar = ({ ratio, color }: AnimatedProgressBarProps) => {
                     styles.progressFill,
                     {
                         backgroundColor: color,
-                        width: progress.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ['0%', '100%']
-                        })
+                        transform: [{ scaleX: progress }]
                     }
                 ]}
             />
@@ -352,7 +349,7 @@ const ExerciseVolumeRow = ({ exercise, ratio, rank }: ExerciseVolumeRowProps) =>
 
 export default function TabOneScreen() {
     const { data: workouts = [], isLoading, isError } = useGetWorkouts()
-    const { data: stats } = useGetWorkoutStats()
+    const { data: stats, isLoading: isStatsLoading, isError: isStatsError } = useGetWorkoutStats()
     const router = useRouter()
 
     const recentWorkouts = useMemo(() => {
@@ -366,11 +363,11 @@ export default function TabOneScreen() {
             .slice(0, 4)
     }, [workouts])
 
-    if (isLoading) {
+    if (isLoading || isStatsLoading) {
         return <LoadingState title="Loading dashboard"/>
     }
 
-    if (isError) {
+    if (isError || isStatsError) {
         return (
             <StateView
                 title="Could not load dashboard"
@@ -692,6 +689,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(104, 113, 109, 0.18)'
     },
     progressFill: {
+        width: '100%',
         height: 8,
         borderRadius: 4
     },

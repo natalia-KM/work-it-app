@@ -98,4 +98,18 @@ describe('workout stats analytics', () => {
         expect(stats.currentStreakDays).toBe(0)
         expect(stats.longestStreakDays).toBe(2)
     })
+
+    it('ignores malformed legacy row details without failing the dashboard stats', () => {
+        const stats = buildWorkoutStats([
+            row({
+                date: '2026-07-10T09:00:00' as unknown as Date,
+                details: '[{\"set\":1,\"reps\":10,\"weight\":80}]' as never
+            })
+        ], new Date('2026-07-10T12:00:00'))
+
+        expect(stats.completedWorkouts).toBe(1)
+        expect(stats.loggedSets).toBe(0)
+        expect(stats.totalVolume).toBe(0)
+        expect(stats.currentStreakDays).toBe(1)
+    })
 })
