@@ -70,3 +70,33 @@ export interface ExerciseLog {
     restTime: number;
     bestAchieved: number | null;
 }
+
+export interface CompletedWorkoutHistoryItem {
+    workoutLogId: number;
+    workoutId: number;
+    workoutTitle: string;
+    date: Date | null;
+    duration: number | null;
+    exerciseCount: number;
+    setCount: number;
+    totalVolume: number;
+}
+
+export interface CompletedWorkoutSet extends ExerciseLogDetails {
+    volume: number;
+}
+
+export interface CompletedWorkoutExercise {
+    exerciseLogId: number;
+    exerciseId: number;
+    exerciseTitle: string;
+    details: CompletedWorkoutSet[];
+    notes: string | null;
+    restTime: number;
+    bestAchieved: number | null;
+    totalVolume: number;
+}
+
+export interface CompletedWorkoutSession extends CompletedWorkoutHistoryItem {
+    exercises: CompletedWorkoutExercise[];
+}

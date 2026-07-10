@@ -20,6 +20,14 @@ export default function WorkoutsLayout() {
                     gestureEnabled: false
                 }}
             />
+            <Stack.Screen
+                name="history"
+                options={{ headerShown: false, title: 'Workout History' }}
+            />
+            <Stack.Screen
+                name="history/[id]"
+                options={{ headerShown: false, title: 'Workout Session' }}
+            />
         </Stack>
     );
 }

@@ -23,6 +23,12 @@ export const WorkoutDetailsMenu = ({ workoutId }: WorkoutDetailsMenuProps) => {
         });
     };
 
+    const handleOpenHistory = () => {
+        onClose()
+
+        router.navigate('/(workouts)/history')
+    }
+
     const onClose = () => {
         setMenuOpen(false)
     }
@@ -36,6 +42,7 @@ export const WorkoutDetailsMenu = ({ workoutId }: WorkoutDetailsMenuProps) => {
             onDismiss={onClose}
         >
             <Menu.Item onPress={handleAddExercises} title="Add Exercises"/>
+            <Menu.Item onPress={handleOpenHistory} title="History"/>
         </Menu>
     )
 }

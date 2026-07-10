@@ -8,11 +8,12 @@ import {
     WorkoutLogTable,
     WorkoutTable
 } from '@/database/schema'
-import { and, desc, eq } from 'drizzle-orm'
-import { ExerciseLog } from '@/database/entities'
+import { and, asc, desc, eq } from 'drizzle-orm'
+import { CompletedWorkoutHistoryItem, CompletedWorkoutSession, ExerciseLog } from '@/database/entities'
 import { WorkoutProgressSession } from '@/store/types'
 import { getBestAchieved, getPersistableSets } from '@/database/services/logSessionMapper'
 import { buildWorkoutStats, WorkoutStats } from '@/database/stats'
+import { buildCompletedWorkoutHistory, buildCompletedWorkoutSession } from '@/database/logHistory'
 
 export const useLogService = () => {
     const db = useSQLiteContext();
@@ -131,5 +132,82 @@ export const useLogService = () => {
         return buildWorkoutStats(rows)
     }
 
-    return { getRecentExerciseLogs, saveWorkoutSession, getWorkoutStats }
+    const getCompletedWorkoutHistory = async (): Promise<CompletedWorkoutHistoryItem[]> => {
+        const rows = await drizzleDb
+            .select({
+                workoutLogId: WorkoutLogTable.id,
+                workoutId: WorkoutLogTable.workoutId,
+                workoutTitle: WorkoutTable.title,
+                date: WorkoutLogTable.date,
+                duration: WorkoutLogTable.duration,
+                exerciseLogId: WorkoutLogExerciseTable.id,
+                exerciseId: WorkoutLogExerciseTable.exerciseId,
+                exerciseTitle: ExerciseTable.title,
+                details: WorkoutLogExerciseTable.details,
+                notes: WorkoutLogExerciseTable.notes,
+                restTime: WorkoutLogExerciseTable.restTime,
+                bestAchieved: WorkoutLogExerciseTable.bestAchieved
+            })
+            .from(WorkoutLogTable)
+            .innerJoin(
+                WorkoutTable,
+                eq(WorkoutLogTable.workoutId, WorkoutTable.id)
+            )
+            .leftJoin(
+                WorkoutLogExerciseTable,
+                eq(WorkoutLogExerciseTable.workoutLogId, WorkoutLogTable.id)
+            )
+            .leftJoin(
+                ExerciseTable,
+                eq(WorkoutLogExerciseTable.exerciseId, ExerciseTable.id)
+            )
+            .orderBy(desc(WorkoutLogTable.date), desc(WorkoutLogTable.id))
+
+        return buildCompletedWorkoutHistory(rows)
+    }
+
+    const getCompletedWorkoutSession = async (
+        workoutLogId: number
+    ): Promise<CompletedWorkoutSession | undefined> => {
+        const rows = await drizzleDb
+            .select({
+                workoutLogId: WorkoutLogTable.id,
+                workoutId: WorkoutLogTable.workoutId,
+                workoutTitle: WorkoutTable.title,
+                date: WorkoutLogTable.date,
+                duration: WorkoutLogTable.duration,
+                exerciseLogId: WorkoutLogExerciseTable.id,
+                exerciseId: WorkoutLogExerciseTable.exerciseId,
+                exerciseTitle: ExerciseTable.title,
+                details: WorkoutLogExerciseTable.details,
+                notes: WorkoutLogExerciseTable.notes,
+                restTime: WorkoutLogExerciseTable.restTime,
+                bestAchieved: WorkoutLogExerciseTable.bestAchieved
+            })
+            .from(WorkoutLogTable)
+            .innerJoin(
+                WorkoutTable,
+                eq(WorkoutLogTable.workoutId, WorkoutTable.id)
+            )
+            .leftJoin(
+                WorkoutLogExerciseTable,
+                eq(WorkoutLogExerciseTable.workoutLogId, WorkoutLogTable.id)
+            )
+            .leftJoin(
+                ExerciseTable,
+                eq(WorkoutLogExerciseTable.exerciseId, ExerciseTable.id)
+            )
+            .where(eq(WorkoutLogTable.id, workoutLogId))
+            .orderBy(asc(WorkoutLogExerciseTable.id))
+
+        return buildCompletedWorkoutSession(rows)
+    }
+
+    return {
+        getRecentExerciseLogs,
+        saveWorkoutSession,
+        getWorkoutStats,
+        getCompletedWorkoutHistory,
+        getCompletedWorkoutSession
+    }
 }

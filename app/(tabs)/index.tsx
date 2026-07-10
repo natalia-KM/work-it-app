@@ -484,13 +484,24 @@ export default function TabOneScreen() {
                     )}
                 </View>
 
-                <Button
-                    mode="contained-tonal"
-                    icon="arrow-right"
-                    onPress={() => router.navigate('/(tabs)/workouts')}
-                >
-                    Open workouts
-                </Button>
+                <View style={styles.actionRow}>
+                    <Button
+                        mode="contained-tonal"
+                        icon="history"
+                        style={styles.actionButton}
+                        onPress={() => router.navigate('/(workouts)/history')}
+                    >
+                        History
+                    </Button>
+                    <Button
+                        mode="contained-tonal"
+                        icon="arrow-right"
+                        style={styles.actionButton}
+                        onPress={() => router.navigate('/(tabs)/workouts')}
+                    >
+                        Workouts
+                    </Button>
+                </View>
             </ScrollView>
         </AppScreen>
     )
@@ -741,6 +752,14 @@ const styles = StyleSheet.create({
     },
     recentList: {
         gap: 10
+    },
+    actionRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12
+    },
+    actionButton: {
+        flexGrow: 1
     },
     workoutCard: {
         backgroundColor: palette.surface
