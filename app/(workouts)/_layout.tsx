@@ -8,6 +8,10 @@ export default function WorkoutsLayout() {
                 options={{ presentation: 'formSheet', headerShown: true, title: 'Select Exercises' }}
             />
             <Stack.Screen
+                name="edit-template"
+                options={{ presentation: 'formSheet', headerShown: false, title: 'Edit Template' }}
+            />
+            <Stack.Screen
                 name="current-workout-main"
                 options={{ presentation: 'formSheet', headerShown: false, title: 'Workout' }}
             />

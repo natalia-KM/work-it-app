@@ -23,6 +23,15 @@ export const WorkoutDetailsMenu = ({ workoutId }: WorkoutDetailsMenuProps) => {
         });
     };
 
+    const handleEditTemplate = () => {
+        onClose()
+
+        router.navigate({
+            pathname: "/(workouts)/edit-template",
+            params: { workoutId }
+        })
+    }
+
     const handleOpenHistory = () => {
         onClose()
 
@@ -41,6 +50,7 @@ export const WorkoutDetailsMenu = ({ workoutId }: WorkoutDetailsMenuProps) => {
             anchorPosition={'bottom'}
             onDismiss={onClose}
         >
+            <Menu.Item onPress={handleEditTemplate} title="Edit Template"/>
             <Menu.Item onPress={handleAddExercises} title="Add Exercises"/>
             <Menu.Item onPress={handleOpenHistory} title="History"/>
         </Menu>

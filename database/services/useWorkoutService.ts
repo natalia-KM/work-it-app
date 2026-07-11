@@ -4,6 +4,19 @@ import * as schema from '@/database/schema'
 import { WorkoutTable } from '@/database/schema'
 import { ExerciseWorkoutDetails, Workout } from '@/database/entities'
 import { and, asc, eq, inArray } from 'drizzle-orm'
+import {
+    cleanTemplateText,
+    normalizeWorkoutTemplateExercises,
+    WorkoutTemplateExerciseDraft
+} from '@/database/services/workoutTemplateMapper'
+
+export interface UpdateWorkoutTemplateInput {
+    workoutId: number
+    title: string
+    notes?: string | null
+    color?: string | null
+    exercises: WorkoutTemplateExerciseDraft[]
+}
 
 export const useWorkoutService = () => {
     const db = useSQLiteContext();
@@ -16,6 +29,42 @@ export const useWorkoutService = () => {
     const addWorkout = async (workout: Omit<Workout, 'id' | 'createdAt'>) => {
         const result = await drizzleDb.insert(WorkoutTable).values(workout)
         return result.lastInsertRowId
+    }
+
+    const updateWorkoutTemplate = async ({
+        workoutId,
+        title,
+        notes,
+        color,
+        exercises
+    }: UpdateWorkoutTemplateInput) => {
+        await drizzleDb
+            .update(WorkoutTable)
+            .set({
+                title: title.trim(),
+                notes: cleanTemplateText(notes),
+                color: cleanTemplateText(color)
+            })
+            .where(eq(WorkoutTable.id, workoutId))
+
+        const normalizedExercises = normalizeWorkoutTemplateExercises(exercises)
+
+        for (const exercise of normalizedExercises) {
+            await drizzleDb
+                .update(schema.WorkoutExerciseTable)
+                .set({
+                    isOptional: exercise.isOptional,
+                    sortOrder: exercise.sortOrder,
+                    targetSets: exercise.targetSets,
+                    targetReps: exercise.targetReps,
+                    targetWeight: exercise.targetWeight,
+                    notes: exercise.notes
+                })
+                .where(and(
+                    eq(schema.WorkoutExerciseTable.workoutId, workoutId),
+                    eq(schema.WorkoutExerciseTable.exerciseId, exercise.exerciseId)
+                ))
+        }
     }
 
     const getWorkoutById = async (workoutId: number): Promise<Workout | undefined> => {
@@ -82,6 +131,7 @@ export const useWorkoutService = () => {
         getWorkoutById,
         getWorkoutExercisesWithDetails,
         addWorkoutExercises,
-        removeWorkoutExercises
+        removeWorkoutExercises,
+        updateWorkoutTemplate
     }
 }
