@@ -5,7 +5,7 @@ import { useGetWorkout } from '@/hooks/workouts/useGetWorkout'
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
 import { ExerciseWorkoutDetails } from '@/database/entities'
 import { getImageSource } from '@/components/utils/getImageSource'
-import { ExerciseProgressLog, useWorkoutProgressStore } from '@/store'
+import { DEFAULT_REST_TIMER_SECONDS, ExerciseProgressLog, useWorkoutProgressStore } from '@/store'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFinishWorkout } from '@/hooks/logs/useFinishWorkout'
 import { StateView } from '@/components/ui/Screen'
@@ -43,7 +43,7 @@ export default function CurrentWorkoutMainScreen() {
                     return {
                         exerciseId: item.id,
                         details: [],
-                        restTime: 0,
+                        restTime: DEFAULT_REST_TIMER_SECONDS,
                         notes: item.notes ?? undefined,
                         bestAchieved: item.bestAchieved ?? undefined,
                         isOptional: item.isOptional

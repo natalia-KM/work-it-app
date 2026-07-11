@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { useWorkoutProgressStore } from '@/store/useWorkoutProgressStore'
+import { DEFAULT_REST_TIMER_SECONDS, useWorkoutProgressStore } from '@/store/useWorkoutProgressStore'
 
 describe('workout progress store', () => {
     beforeEach(() => {
@@ -84,6 +84,85 @@ describe('workout progress store', () => {
         expect(state.exerciseData[1].notes).toBe('Keep elbows tucked')
     })
 
+    it('starts the rest timer when a set is marked complete', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([{ exerciseId: 3, details: [], restTime: DEFAULT_REST_TIMER_SECONDS }])
+        store.setCurrentExerciseId(3)
+        store.addSet()
+        store.setCompleted(1)
+
+        const state = useWorkoutProgressStore.getState()
+        const session = state.getSession()
+
+        expect(state.currentExerciseDetails).toEqual([
+            { set: 1, reps: 0, weight: 0, isCompleted: true }
+        ])
+        expect(state.restTimerRemainingSeconds).toBe(DEFAULT_REST_TIMER_SECONDS)
+        expect(state.isRestTimerRunning).toBe(true)
+        expect(state.hasRestTimerStarted).toBe(true)
+        expect(session?.exercises[0].restTime).toBe(DEFAULT_REST_TIMER_SECONDS)
+    })
+
+    it('pauses, resumes, ticks, and resets the rest timer', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([{ exerciseId: 3, details: [], restTime: DEFAULT_REST_TIMER_SECONDS }])
+        store.setCurrentExerciseId(3)
+        store.startRestTimer()
+        store.pauseRestTimer()
+        store.tickRestTimer()
+
+        expect(useWorkoutProgressStore.getState().isRestTimerRunning).toBe(false)
+        expect(useWorkoutProgressStore.getState().restTimerRemainingSeconds).toBe(DEFAULT_REST_TIMER_SECONDS)
+
+        store.resumeRestTimer()
+        store.tickRestTimer()
+
+        expect(useWorkoutProgressStore.getState().isRestTimerRunning).toBe(true)
+        expect(useWorkoutProgressStore.getState().restTimerRemainingSeconds).toBe(DEFAULT_REST_TIMER_SECONDS - 1)
+
+        store.resetRestTimer()
+
+        expect(useWorkoutProgressStore.getState().isRestTimerRunning).toBe(false)
+        expect(useWorkoutProgressStore.getState().restTimerRemainingSeconds).toBe(DEFAULT_REST_TIMER_SECONDS)
+        expect(useWorkoutProgressStore.getState().hasRestTimerStarted).toBe(false)
+    })
+
+    it('keeps an elapsed rest timer at zero until reset or restart', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([{ exerciseId: 3, details: [], restTime: 1 }])
+        store.setCurrentExerciseId(3)
+        store.startRestTimer()
+        store.tickRestTimer()
+
+        const state = useWorkoutProgressStore.getState()
+
+        expect(state.restTimerRemainingSeconds).toBe(0)
+        expect(state.isRestTimerRunning).toBe(false)
+        expect(state.hasRestTimerStarted).toBe(true)
+    })
+
+    it('adjusts the rest timer duration and clamps at zero seconds', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.setWorkoutDetails(12, 'Push')
+        store.setExerciseData([{ exerciseId: 3, details: [], restTime: DEFAULT_REST_TIMER_SECONDS }])
+        store.setCurrentExerciseId(3)
+        store.adjustRestTimer(-30)
+        store.adjustRestTimer(-90)
+
+        const state = useWorkoutProgressStore.getState()
+
+        expect(state.exerciseData[0].restTime).toBe(0)
+        expect(state.restTimerRemainingSeconds).toBe(0)
+        expect(state.isRestTimerRunning).toBe(false)
+    })
+
     it('reuses saved exercise details when revisiting an exercise', () => {
         const store = useWorkoutProgressStore.getState()
 
@@ -134,6 +213,23 @@ describe('workout progress store', () => {
             startedAt,
             exercises: state.exerciseData
         })
+    })
+
+    it('hydrates saved exercise rest time from an active workout draft', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.hydrateSession({
+            id: 1,
+            workoutId: 12,
+            workoutTitle: 'Push',
+            startedAt: new Date('2026-07-10T12:00:00.000Z'),
+            exerciseData: [{ exerciseId: 3, details: [], restTime: 75 }],
+            currentExerciseId: 3,
+            currentExerciseDetails: [],
+            updatedAt: new Date('2026-07-10T12:05:00.000Z')
+        })
+
+        expect(useWorkoutProgressStore.getState().getSession()?.exercises[0].restTime).toBe(75)
     })
 
     it('keeps hydrated current exercise edits when reopening the same exercise', () => {
