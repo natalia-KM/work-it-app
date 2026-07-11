@@ -1,6 +1,6 @@
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
 import { Button, Card, List, Text } from 'react-native-paper'
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native'
 import { NoItemsFound } from '@/components/NoItemsFound'
 import { getImageSource } from '@/components/utils/getImageSource'
 import { AddWorkoutExercisesButton } from '@/components/WorkoutExercises/AddWorkoutExercisesButton'
@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router'
 import { useWorkoutProgressStore } from '@/store/useWorkoutProgressStore'
 import { palette } from '@/constants/theme'
 import { StateView } from '@/components/ui/Screen'
+import { useDeleteActiveWorkoutDraft, useGetActiveWorkoutDraft } from '@/hooks/workouts/useActiveWorkoutDraft'
 
 interface WorkoutExercisesProps {
     workoutId: number
@@ -21,9 +22,70 @@ const formatDate = (date?: Date | null) => {
 
 export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
     const { data: exercises, isError: isExerciseError } = useGetWorkoutExercises({ workoutId })
+    const { data: activeDraft, isLoading: isActiveDraftLoading } = useGetActiveWorkoutDraft()
+    const deleteActiveDraft = useDeleteActiveWorkoutDraft()
 
-    const { resetSession, setWorkoutDetails } = useWorkoutProgressStore()
+    const { hydrateSession, resetSession, setWorkoutDetails } = useWorkoutProgressStore()
     const router = useRouter()
+
+    const navigateToActiveWorkout = () => {
+        router.navigate({
+            pathname: '/(workouts)/current-workout-main'
+        })
+    }
+
+    const resumeDraft = () => {
+        if (!activeDraft) return
+
+        hydrateSession(activeDraft)
+        navigateToActiveWorkout()
+    }
+
+    const startFreshWorkout = async () => {
+        try {
+            if (activeDraft) {
+                await deleteActiveDraft.mutateAsync()
+            }
+
+            resetSession()
+            setWorkoutDetails(workoutId)
+            navigateToActiveWorkout()
+        } catch {
+            Alert.alert('Could not start workout', 'The saved workout draft could not be cleared.')
+        }
+    }
+
+    const handleStartWorkout = () => {
+        if (!activeDraft) {
+            void startFreshWorkout()
+            return
+        }
+
+        const draftTitle = activeDraft.workoutTitle ?? 'saved workout'
+
+        if (activeDraft.workoutId === workoutId) {
+            Alert.alert(
+                'Resume workout?',
+                'There is a saved draft for this workout.',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Start Over', style: 'destructive', onPress: () => void startFreshWorkout() },
+                    { text: 'Resume', onPress: resumeDraft }
+                ]
+            )
+            return
+        }
+
+        Alert.alert(
+            'Active workout saved',
+            `Resume ${draftTitle}, or discard it and start this workout?`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Discard & Start', style: 'destructive', onPress: () => void startFreshWorkout() },
+                { text: 'Resume Saved', onPress: resumeDraft }
+            ]
+        )
+    }
 
     if (isExerciseError || !exercises) {
         return (
@@ -74,13 +136,14 @@ export const WorkoutExercises = ({ workoutId }: WorkoutExercisesProps) => {
                     </Card>
                 ))}
             </ScrollView>
-            <Button mode="contained" icon="play" contentStyle={styles.startButtonContent} onPress={() => {
-                resetSession()
-                setWorkoutDetails(workoutId)
-                router.navigate({
-                    pathname: '/(workouts)/current-workout-main'
-                })
-            }}>
+            <Button
+                mode="contained"
+                icon="play"
+                contentStyle={styles.startButtonContent}
+                disabled={deleteActiveDraft.isPending || isActiveDraftLoading}
+                loading={deleteActiveDraft.isPending || isActiveDraftLoading}
+                onPress={handleStartWorkout}
+            >
                 Start workout
             </Button>
         </View>

@@ -57,6 +57,13 @@
       "when": 1783634471031,
       "tag": "0007_odd_silver_sable",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1783723161568,
+      "tag": "0008_moaning_boomer",
+      "breakpoints": true
     }
   ]
 }
