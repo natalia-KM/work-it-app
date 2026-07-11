@@ -5,13 +5,16 @@ import { useGetWorkout } from '@/hooks/workouts/useGetWorkout'
 import { useGetWorkoutExercises } from '@/hooks/workouts/useGetWorkoutExercises'
 import { ExerciseWorkoutDetails } from '@/database/entities'
 import { getImageSource } from '@/components/utils/getImageSource'
-import { ExerciseProgressLog, useWorkoutProgressStore } from '@/store'
+import { DEFAULT_REST_TIMER_SECONDS, ExerciseProgressLog, useWorkoutProgressStore } from '@/store'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFinishWorkout } from '@/hooks/logs/useFinishWorkout'
 import { StateView } from '@/components/ui/Screen'
 import { palette } from '@/constants/theme'
+import { useDeleteActiveWorkoutDraft } from '@/hooks/workouts/useActiveWorkoutDraft'
+import { usePersistActiveWorkoutDraft } from '@/hooks/workouts/usePersistActiveWorkoutDraft'
 
 export default function CurrentWorkoutMainScreen() {
+    usePersistActiveWorkoutDraft()
     const {
         workoutId,
         setWorkoutDetails,
@@ -23,6 +26,7 @@ export default function CurrentWorkoutMainScreen() {
         hasSessionData
     } = useWorkoutProgressStore()
     const finishWorkout = useFinishWorkout()
+    const deleteActiveDraft = useDeleteActiveWorkoutDraft()
 
     const { data: workout, isError } = useGetWorkout({
         workoutId,
@@ -39,7 +43,7 @@ export default function CurrentWorkoutMainScreen() {
                     return {
                         exerciseId: item.id,
                         details: [],
-                        restTime: 0,
+                        restTime: DEFAULT_REST_TIMER_SECONDS,
                         notes: item.notes ?? undefined,
                         bestAchieved: item.bestAchieved ?? undefined,
                         isOptional: item.isOptional
@@ -68,14 +72,19 @@ export default function CurrentWorkoutMainScreen() {
         })
     }
 
-    const cancelWorkout = () => {
-        resetSession()
-        router.replace('/(tabs)/workouts')
+    const cancelWorkout = async () => {
+        try {
+            await deleteActiveDraft.mutateAsync()
+            resetSession()
+            router.replace('/(tabs)/workouts')
+        } catch {
+            Alert.alert('Could not discard workout', 'Please try again.')
+        }
     }
 
     const handleCancel = () => {
         if (!hasSessionData()) {
-            cancelWorkout()
+            void cancelWorkout()
             return
         }
 
@@ -84,7 +93,7 @@ export default function CurrentWorkoutMainScreen() {
             'Entered sets will be lost.',
             [
                 { text: 'Keep Going', style: 'cancel' },
-                { text: 'Discard', style: 'destructive', onPress: cancelWorkout }
+                { text: 'Discard', style: 'destructive', onPress: () => void cancelWorkout() }
             ]
         )
     }
@@ -113,6 +122,7 @@ export default function CurrentWorkoutMainScreen() {
 
         try {
             await finishWorkout.mutateAsync(session)
+            await deleteActiveDraft.mutateAsync()
             resetSession()
             router.replace('/(tabs)/workouts')
         } catch {
