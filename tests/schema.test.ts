@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getTableName } from 'drizzle-orm'
 import {
+    ActiveWorkoutDraftTable,
     ExerciseTable,
     WorkoutExerciseTable,
     WorkoutLogExerciseTable,
@@ -15,6 +16,7 @@ describe('database schema', () => {
         expect(getTableName(WorkoutExerciseTable)).toBe('Workout_Exercise')
         expect(getTableName(WorkoutLogTable)).toBe('WorkoutLog')
         expect(getTableName(WorkoutLogExerciseTable)).toBe('WorkoutLog_Exercise')
+        expect(getTableName(ActiveWorkoutDraftTable)).toBe('ActiveWorkoutDraft')
     })
 
     it('includes imported-note metadata on exercise and workout templates', () => {
@@ -28,6 +30,15 @@ describe('database schema', () => {
 
     it('tracks imported workout log source for idempotent imports', () => {
         expect(WorkoutLogTable.source).toBeDefined()
+    })
+
+    it('stores a single recoverable active workout draft', () => {
+        expect(ActiveWorkoutDraftTable.id).toBeDefined()
+        expect(ActiveWorkoutDraftTable.workoutId).toBeDefined()
+        expect(ActiveWorkoutDraftTable.startedAt).toBeDefined()
+        expect(ActiveWorkoutDraftTable.exerciseData).toBeDefined()
+        expect(ActiveWorkoutDraftTable.currentExerciseDetails).toBeDefined()
+        expect(ActiveWorkoutDraftTable.updatedAt).toBeDefined()
     })
 })
 

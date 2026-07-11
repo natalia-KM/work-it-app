@@ -1,5 +1,5 @@
 import { create } from 'zustand/react'
-import { ExerciseProgressLog, ExerciseProgressLogDetails, WorkoutProgressSession } from '@/store/types'
+import { ActiveWorkoutDraft, ExerciseProgressLog, ExerciseProgressLogDetails, WorkoutProgressSession } from '@/store/types'
 
 interface WorkoutProgressStore {
     workoutId?: number
@@ -10,6 +10,7 @@ interface WorkoutProgressStore {
     exerciseData: ExerciseProgressLog[]
     setExerciseData: (exerciseData: ExerciseProgressLog[]) => void
     getSession: () => WorkoutProgressSession | undefined
+    hydrateSession: (draft: ActiveWorkoutDraft) => void
     resetSession: () => void
 
     confirmCurrentExercise: () => void
@@ -41,10 +42,12 @@ export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get)
     })),
 
     currentExerciseId: undefined,
-    setCurrentExerciseId: (exerciseId) => set({
+    setCurrentExerciseId: (exerciseId) => set((state) => ({
         currentExerciseId: exerciseId,
-        currentExerciseDetails: []
-    }),
+        currentExerciseDetails: state.currentExerciseId === exerciseId
+            ? state.currentExerciseDetails
+            : []
+    })),
 
     exerciseData: [],
     setExerciseData: (exerciseData) => set({ exerciseData }),
@@ -60,6 +63,15 @@ export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get)
             exercises: exerciseData
         }
     },
+
+    hydrateSession: (draft) => set({
+        workoutId: draft.workoutId,
+        workoutTitle: draft.workoutTitle ?? undefined,
+        startedAt: draft.startedAt,
+        exerciseData: draft.exerciseData,
+        currentExerciseId: draft.currentExerciseId ?? undefined,
+        currentExerciseDetails: draft.currentExerciseDetails
+    }),
 
     resetSession: () => set({
         workoutId: undefined,
@@ -122,9 +134,10 @@ export const useWorkoutProgressStore = create<WorkoutProgressStore>()((set, get)
         );
 
         return {
-            currentExerciseDetails:
-                currentExercise && currentExercise.details.length > 0
-                    ? currentExercise.details
+            currentExerciseDetails: currentExercise && currentExercise.details.length > 0
+                ? currentExercise.details
+                : state.currentExerciseDetails.length > 0
+                    ? state.currentExerciseDetails
                     : exerciseDetails
         };
     }),

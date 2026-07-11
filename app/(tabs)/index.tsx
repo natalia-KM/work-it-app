@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useMemo, useRef } from 'react'
-import { Animated, Easing, FlatList, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import { Alert, Animated, Easing, FlatList, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import { Button, Card, Icon, List, Text } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { useGetWorkouts } from '@/hooks/workouts/useGetWorkouts'
@@ -9,6 +9,8 @@ import { useGetWorkoutStats } from '@/hooks/logs/useGetWorkoutStats'
 import { AppScreen, LoadingState, ScreenHeader, SectionHeader, StateView } from '@/components/ui/Screen'
 import { palette } from '@/constants/theme'
 import { ExerciseVolumeStat, WorkoutTrendPoint } from '@/database/stats'
+import { useDeleteActiveWorkoutDraft, useGetActiveWorkoutDraft } from '@/hooks/workouts/useActiveWorkoutDraft'
+import { ActiveWorkoutDraft, useWorkoutProgressStore } from '@/store'
 
 const formatWorkoutDate = (date?: Date | null) => {
     if (!date) return 'Not completed yet'
@@ -45,6 +47,13 @@ const formatDelta = (value: number) => {
     const prefix = value > 0 ? '+' : ''
 
     return `${prefix}${Math.round(value)}%`
+}
+
+const formatDraftStartedAt = (date: Date) => {
+    return `Started ${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    })}`
 }
 
 interface AnimatedRevealProps {
@@ -347,9 +356,53 @@ const ExerciseVolumeRow = ({ exercise, ratio, rank }: ExerciseVolumeRowProps) =>
     </View>
 )
 
+interface ActiveWorkoutDraftPanelProps {
+    draft: ActiveWorkoutDraft
+    isDiscarding: boolean
+    onResume: () => void
+    onDiscard: () => void
+}
+
+const ActiveWorkoutDraftPanel = ({
+    draft,
+    isDiscarding,
+    onResume,
+    onDiscard
+}: ActiveWorkoutDraftPanelProps) => (
+    <Card mode="contained" style={styles.activeDraftCard}>
+        <Card.Content style={styles.activeDraftContent}>
+            <View style={styles.panelHeader}>
+                <View style={styles.activeDraftText}>
+                    <Text variant="labelLarge" style={styles.activeDraftEyebrow}>Active workout</Text>
+                    <Text variant="titleLarge" style={styles.activeDraftTitle}>{draft.workoutTitle ?? 'Workout in progress'}</Text>
+                    <Text variant="bodySmall" style={styles.activeDraftMeta}>{formatDraftStartedAt(draft.startedAt)}</Text>
+                </View>
+                <Icon source="progress-clock" size={26} color={palette.primary}/>
+            </View>
+            <View style={styles.activeDraftActions}>
+                <Button
+                    mode="outlined"
+                    icon="delete-outline"
+                    loading={isDiscarding}
+                    disabled={isDiscarding}
+                    onPress={onDiscard}
+                >
+                    Discard
+                </Button>
+                <Button mode="contained" icon="play" onPress={onResume}>
+                    Resume
+                </Button>
+            </View>
+        </Card.Content>
+    </Card>
+)
+
 export default function TabOneScreen() {
     const { data: workouts = [], isLoading, isError } = useGetWorkouts()
     const { data: stats, isLoading: isStatsLoading, isError: isStatsError } = useGetWorkoutStats()
+    const { data: activeDraft } = useGetActiveWorkoutDraft()
+    const deleteActiveDraft = useDeleteActiveWorkoutDraft()
+    const { hydrateSession } = useWorkoutProgressStore()
     const router = useRouter()
 
     const recentWorkouts = useMemo(() => {
@@ -377,6 +430,34 @@ export default function TabOneScreen() {
         )
     }
 
+    const resumeActiveDraft = () => {
+        if (!activeDraft) return
+
+        hydrateSession(activeDraft)
+        router.navigate('/(workouts)/current-workout-main')
+    }
+
+    const discardActiveDraft = () => {
+        Alert.alert(
+            'Discard saved workout?',
+            'Entered sets and notes in this draft will be lost.',
+            [
+                { text: 'Keep', style: 'cancel' },
+                {
+                    text: 'Discard',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteActiveDraft.mutateAsync()
+                        } catch {
+                            Alert.alert('Could not discard workout', 'Please try again.')
+                        }
+                    }
+                }
+            ]
+        )
+    }
+
     return (
         <AppScreen contentStyle={styles.screenContent}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -386,6 +467,17 @@ export default function TabOneScreen() {
                     description="Plan sessions, log sets, and keep your recent progress close at hand."
                     action={<AddWorkoutButton compact/>}
                 />
+
+                {activeDraft ? (
+                    <AnimatedReveal delay={40}>
+                        <ActiveWorkoutDraftPanel
+                            draft={activeDraft}
+                            isDiscarding={deleteActiveDraft.isPending}
+                            onResume={resumeActiveDraft}
+                            onDiscard={discardActiveDraft}
+                        />
+                    </AnimatedReveal>
+                ) : null}
 
                 <AnimatedReveal>
                     <MomentumPanel
@@ -520,6 +612,33 @@ const styles = StyleSheet.create({
     },
     section: {
         gap: 12
+    },
+    activeDraftCard: {
+        backgroundColor: palette.surface
+    },
+    activeDraftContent: {
+        gap: 16
+    },
+    activeDraftText: {
+        flex: 1,
+        gap: 4
+    },
+    activeDraftEyebrow: {
+        color: palette.primary,
+        textTransform: 'uppercase'
+    },
+    activeDraftTitle: {
+        color: palette.ink,
+        fontWeight: '800'
+    },
+    activeDraftMeta: {
+        color: palette.muted
+    },
+    activeDraftActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        flexWrap: 'wrap',
+        gap: 10
     },
     heroCard: {
         overflow: 'hidden',

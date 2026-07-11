@@ -101,6 +101,63 @@ describe('workout progress store', () => {
         ])
     })
 
+    it('hydrates an active workout draft into a finish-ready session', () => {
+        const startedAt = new Date('2026-07-10T12:00:00.000Z')
+        const updatedAt = new Date('2026-07-10T12:05:00.000Z')
+        const store = useWorkoutProgressStore.getState()
+
+        store.hydrateSession({
+            id: 1,
+            workoutId: 12,
+            workoutTitle: 'Push',
+            startedAt,
+            exerciseData: [{
+                exerciseId: 3,
+                details: [{ set: 1, reps: 8, weight: 40, isCompleted: true }],
+                restTime: 0,
+                completed: true
+            }],
+            currentExerciseId: 3,
+            currentExerciseDetails: [{ set: 1, reps: 8, weight: 40, isCompleted: true }],
+            updatedAt
+        })
+
+        const state = useWorkoutProgressStore.getState()
+        const session = state.getSession()
+
+        expect(state.workoutId).toBe(12)
+        expect(state.workoutTitle).toBe('Push')
+        expect(state.startedAt).toBe(startedAt)
+        expect(state.currentExerciseId).toBe(3)
+        expect(session).toEqual({
+            workoutId: 12,
+            startedAt,
+            exercises: state.exerciseData
+        })
+    })
+
+    it('keeps hydrated current exercise edits when reopening the same exercise', () => {
+        const store = useWorkoutProgressStore.getState()
+
+        store.hydrateSession({
+            id: 1,
+            workoutId: 12,
+            workoutTitle: 'Push',
+            startedAt: new Date('2026-07-10T12:00:00.000Z'),
+            exerciseData: [{ exerciseId: 3, details: [], restTime: 0 }],
+            currentExerciseId: 3,
+            currentExerciseDetails: [{ set: 1, reps: 6, weight: 45, isCompleted: false }],
+            updatedAt: new Date('2026-07-10T12:05:00.000Z')
+        })
+
+        store.setCurrentExerciseId(3)
+        store.setCurrentExerciseDetails([{ set: 1, reps: 0, weight: 0 }])
+
+        expect(useWorkoutProgressStore.getState().currentExerciseDetails).toEqual([
+            { set: 1, reps: 6, weight: 45, isCompleted: false }
+        ])
+    })
+
     it('resets all session data after cancel or finish', () => {
         const store = useWorkoutProgressStore.getState()
 

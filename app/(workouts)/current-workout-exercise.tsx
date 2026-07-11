@@ -11,9 +11,11 @@ import { LoadingState, StateView } from '@/components/ui/Screen'
 import { palette } from '@/constants/theme'
 import { useState } from 'react'
 import { ExerciseHistoryModal } from '@/components/WorkoutExerciseHistory/ExerciseHistoryModal'
+import { usePersistActiveWorkoutDraft } from '@/hooks/workouts/usePersistActiveWorkoutDraft'
 
 // TODO: maybe context for current and store for whole?
 export default function CurrentWorkoutExerciseScreen() {
+    usePersistActiveWorkoutDraft()
     const [isHistoryVisible, setIsHistoryVisible] = useState(false)
     const {
         workoutId,

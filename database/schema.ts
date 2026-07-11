@@ -1,5 +1,6 @@
 import { integer, real, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 import { ExerciseLogDetails } from '@/database/entities'
+import type { ExerciseProgressLog, ExerciseProgressLogDetails } from '@/store/types'
 
 export const ExerciseTable = sqliteTable("Exercise", {
     id: integer("id").primaryKey({ autoIncrement: true }),
@@ -70,4 +71,16 @@ export const WorkoutLogExerciseTable = sqliteTable("WorkoutLog_Exercise", {
     notes: text("notes"),
     restTime: integer("restTime").notNull(),
     bestAchieved: integer("bestAchieved")
+});
+
+export const ActiveWorkoutDraftTable = sqliteTable("ActiveWorkoutDraft", {
+    id: integer("id").primaryKey(),
+    workoutId: integer("workoutId").notNull()
+        .references(() => WorkoutTable.id),
+    workoutTitle: text("workoutTitle"),
+    startedAt: integer("startedAt", { mode: 'timestamp' }).notNull(),
+    exerciseData: text("exerciseData", { mode: 'json' }).$type<ExerciseProgressLog[]>().notNull(),
+    currentExerciseId: integer("currentExerciseId"),
+    currentExerciseDetails: text("currentExerciseDetails", { mode: 'json' }).$type<ExerciseProgressLogDetails[]>().notNull(),
+    updatedAt: integer("updatedAt", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date())
 });
