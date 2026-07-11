@@ -61,6 +61,14 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="data"
+                options={{
+                    title: 'Data',
+                    tabBarShowLabel: true,
+                    tabBarIcon: ({ color }) => <TabBarIcon icon="database-export-outline" iconColor={color}/>
+                }}
+            />
+            <Tabs.Screen
                 name="exercises"
                 options={{
                     title: 'Exercises',
